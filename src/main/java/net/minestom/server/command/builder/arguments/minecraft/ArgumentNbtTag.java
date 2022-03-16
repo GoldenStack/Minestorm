@@ -39,7 +39,7 @@ public class ArgumentNbtTag extends Argument<NBT> {
     @Override
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-        argumentNode.parser = "minecraft:nbt_tag";
+        argumentNode.parser = CONTAINER.toId("minecraft:nbt_tag");
 
         nodeMaker.addNodes(new DeclareCommandsPacket.Node[]{argumentNode});
     }

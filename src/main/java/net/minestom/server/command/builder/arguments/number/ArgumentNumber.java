@@ -70,7 +70,7 @@ public class ArgumentNumber<T extends Number> extends Argument<T> {
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
 
-        argumentNode.parser = parserName;
+        argumentNode.parser = CONTAINER.toId(parserName);
         argumentNode.properties = BinaryWriter.makeArray(packetWriter -> {
             packetWriter.writeByte(getNumberProperties());
             if (this.hasMin())

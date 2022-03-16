@@ -27,7 +27,7 @@ public class ArgumentBlockState extends Argument<Block> {
     @Override
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-        argumentNode.parser = "minecraft:block_state";
+        argumentNode.parser = CONTAINER.toId("minecraft:block_state");
 
         nodeMaker.addNodes(new DeclareCommandsPacket.Node[]{argumentNode});
     }

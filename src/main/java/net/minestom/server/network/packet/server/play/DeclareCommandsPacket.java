@@ -40,7 +40,7 @@ public record DeclareCommandsPacket(@NotNull List<Node> nodes,
         public int[] children = new int[0];
         public int redirectedNode; // Only if flags & 0x08
         public String name = ""; // Only for literal and argument
-        public String parser = ""; // Only for argument
+        public int parser; // Only for argument
         public byte[] properties; // Only for argument
         public String suggestionsType = ""; // Only if flags 0x10
 
@@ -62,7 +62,7 @@ public record DeclareCommandsPacket(@NotNull List<Node> nodes,
             }
 
             if (isArgument()) {
-                writer.writeSizedString(parser);
+                writer.writeVarInt(parser);
                 if (properties != null) {
                     writer.writeBytes(properties);
                 }
@@ -86,8 +86,9 @@ public record DeclareCommandsPacket(@NotNull List<Node> nodes,
             }
 
             if (isArgument()) {
-                parser = reader.readSizedString();
-                properties = getProperties(reader, parser);
+                parser = reader.readVarInt();
+                // FIXME: properties
+                //properties = getProperties(reader, parser);
             }
 
             if ((flags & 0x10) != 0) {

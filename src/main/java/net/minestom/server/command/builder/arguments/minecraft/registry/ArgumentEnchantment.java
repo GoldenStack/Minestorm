@@ -22,7 +22,7 @@ public class ArgumentEnchantment extends ArgumentRegistry<Enchantment> {
     @Override
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-        argumentNode.parser = "minecraft:item_enchantment";
+        argumentNode.parser = CONTAINER.toId("minecraft:item_enchantment");
 
         nodeMaker.addNodes(new DeclareCommandsPacket.Node[]{argumentNode});
     }

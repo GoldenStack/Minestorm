@@ -74,7 +74,7 @@ public class ArgumentEntity extends Argument<EntityFinder> {
     @Override
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-        argumentNode.parser = "minecraft:entity";
+        argumentNode.parser = CONTAINER.toId("minecraft:entity");
         argumentNode.properties = BinaryWriter.makeArray(packetWriter -> {
             byte mask = 0;
             if (this.isOnlySingleEntity()) {

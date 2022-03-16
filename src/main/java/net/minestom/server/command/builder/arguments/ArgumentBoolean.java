@@ -32,7 +32,7 @@ public class ArgumentBoolean extends Argument<Boolean> {
     @Override
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-        argumentNode.parser = "brigadier:bool";
+        argumentNode.parser = CONTAINER.toId("brigadier:bool");
 
         nodeMaker.addNodes(new DeclareCommandsPacket.Node[]{argumentNode});
     }

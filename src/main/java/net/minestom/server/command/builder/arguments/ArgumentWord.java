@@ -90,7 +90,7 @@ public class ArgumentWord extends Argument<String> {
         } else {
             // Can be any word, add only one argument node
             DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-            argumentNode.parser = "brigadier:string";
+            argumentNode.parser = CONTAINER.toId("brigadier:string");
             argumentNode.properties = BinaryWriter.makeArray(packetWriter -> {
                 packetWriter.writeVarInt(0); // Single word
             });

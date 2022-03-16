@@ -34,7 +34,7 @@ public class ArgumentString extends Argument<String> {
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
 
-        argumentNode.parser = "brigadier:string";
+        argumentNode.parser = CONTAINER.toId("brigadier:string");
         argumentNode.properties = BinaryWriter.makeArray(packetWriter -> {
             packetWriter.writeVarInt(1); // Quotable phrase
         });

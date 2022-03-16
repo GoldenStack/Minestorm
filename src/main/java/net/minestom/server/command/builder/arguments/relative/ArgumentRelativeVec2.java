@@ -21,7 +21,7 @@ public class ArgumentRelativeVec2 extends ArgumentRelativeVec {
     @Override
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-        argumentNode.parser = "minecraft:vec2";
+        argumentNode.parser = CONTAINER.toId("minecraft:vec2");
 
         nodeMaker.addNodes(new DeclareCommandsPacket.Node[]{argumentNode});
     }

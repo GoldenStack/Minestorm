@@ -20,7 +20,7 @@ public class ArgumentRelativeBlockPosition extends ArgumentRelativeVec {
     @Override
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-        argumentNode.parser = "minecraft:block_pos";
+        argumentNode.parser = CONTAINER.toId("minecraft:block_pos");
 
         nodeMaker.addNodes(new DeclareCommandsPacket.Node[]{argumentNode});
     }

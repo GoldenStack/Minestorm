@@ -73,7 +73,7 @@ public abstract class ArgumentRange<T extends Range<N>, N extends Number> extend
     @Override
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-        argumentNode.parser = parserName;
+        argumentNode.parser = CONTAINER.toId(parserName);
 
         nodeMaker.addNodes(new DeclareCommandsPacket.Node[]{argumentNode});
     }

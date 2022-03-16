@@ -29,7 +29,7 @@ public class ArgumentUUID extends Argument<UUID> {
     @Override
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-        argumentNode.parser = "minecraft:uuid";
+        argumentNode.parser = CONTAINER.toId("minecraft:uuid");
 
         nodeMaker.addNodes(new DeclareCommandsPacket.Node[]{argumentNode});
     }

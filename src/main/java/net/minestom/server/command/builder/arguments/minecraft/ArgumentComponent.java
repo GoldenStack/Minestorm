@@ -31,7 +31,7 @@ public class ArgumentComponent extends Argument<Component> {
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
 
-        argumentNode.parser = "minecraft:component";
+        argumentNode.parser = CONTAINER.toId("minecraft:component");
 
         nodeMaker.addNodes(new DeclareCommandsPacket.Node[]{argumentNode});
     }

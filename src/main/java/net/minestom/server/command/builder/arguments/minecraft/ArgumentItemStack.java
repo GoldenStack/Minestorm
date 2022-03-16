@@ -39,7 +39,7 @@ public class ArgumentItemStack extends Argument<ItemStack> {
     @Override
     public void processNodes(@NotNull NodeMaker nodeMaker, boolean executable) {
         DeclareCommandsPacket.Node argumentNode = simpleArgumentNode(this, executable, false, false);
-        argumentNode.parser = "minecraft:item_stack";
+        argumentNode.parser = CONTAINER.toId("minecraft:item_stack");
 
         nodeMaker.addNodes(new DeclareCommandsPacket.Node[]{argumentNode});
     }
