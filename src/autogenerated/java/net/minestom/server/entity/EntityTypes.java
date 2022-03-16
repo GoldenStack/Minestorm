@@ -65,6 +65,8 @@ interface EntityTypes {
 
     EntityType FOX = EntityTypeImpl.get("minecraft:fox");
 
+    EntityType FROG = EntityTypeImpl.get("minecraft:frog");
+
     EntityType GHAST = EntityTypeImpl.get("minecraft:ghast");
 
     EntityType GIANT = EntityTypeImpl.get("minecraft:giant");
@@ -182,6 +184,8 @@ interface EntityTypes {
     EntityType STRAY = EntityTypeImpl.get("minecraft:stray");
 
     EntityType STRIDER = EntityTypeImpl.get("minecraft:strider");
+
+    EntityType TADPOLE = EntityTypeImpl.get("minecraft:tadpole");
 
     EntityType EGG = EntityTypeImpl.get("minecraft:egg");
 

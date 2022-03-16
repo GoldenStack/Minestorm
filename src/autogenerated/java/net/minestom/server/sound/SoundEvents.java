@@ -313,6 +313,8 @@ interface SoundEvents {
 
     SoundEvent ITEM_BUCKET_EMPTY_POWDER_SNOW = SoundEventImpl.get("minecraft:item.bucket.empty_powder_snow");
 
+    SoundEvent ITEM_BUCKET_EMPTY_TADPOLE = SoundEventImpl.get("minecraft:item.bucket.empty_tadpole");
+
     SoundEvent ITEM_BUCKET_FILL = SoundEventImpl.get("minecraft:item.bucket.fill");
 
     SoundEvent ITEM_BUCKET_FILL_AXOLOTL = SoundEventImpl.get("minecraft:item.bucket.fill_axolotl");
@@ -322,6 +324,8 @@ interface SoundEvents {
     SoundEvent ITEM_BUCKET_FILL_LAVA = SoundEventImpl.get("minecraft:item.bucket.fill_lava");
 
     SoundEvent ITEM_BUCKET_FILL_POWDER_SNOW = SoundEventImpl.get("minecraft:item.bucket.fill_powder_snow");
+
+    SoundEvent ITEM_BUCKET_FILL_TADPOLE = SoundEventImpl.get("minecraft:item.bucket.fill_tadpole");
 
     SoundEvent ITEM_BUNDLE_DROP_CONTENTS = SoundEventImpl.get("minecraft:item.bundle.drop_contents");
 
@@ -787,6 +791,44 @@ interface SoundEvents {
 
     SoundEvent ENTITY_FOX_TELEPORT = SoundEventImpl.get("minecraft:entity.fox.teleport");
 
+    SoundEvent BLOCK_FROGLIGHT_BREAK = SoundEventImpl.get("minecraft:block.froglight.break");
+
+    SoundEvent BLOCK_FROGLIGHT_FALL = SoundEventImpl.get("minecraft:block.froglight.fall");
+
+    SoundEvent BLOCK_FROGLIGHT_HIT = SoundEventImpl.get("minecraft:block.froglight.hit");
+
+    SoundEvent BLOCK_FROGLIGHT_PLACE = SoundEventImpl.get("minecraft:block.froglight.place");
+
+    SoundEvent BLOCK_FROGLIGHT_STEP = SoundEventImpl.get("minecraft:block.froglight.step");
+
+    SoundEvent BLOCK_FROGSPAWN_STEP = SoundEventImpl.get("minecraft:block.frogspawn.step");
+
+    SoundEvent BLOCK_FROGSPAWN_BREAK = SoundEventImpl.get("minecraft:block.frogspawn.break");
+
+    SoundEvent BLOCK_FROGSPAWN_FALL = SoundEventImpl.get("minecraft:block.frogspawn.fall");
+
+    SoundEvent BLOCK_FROGSPAWN_HATCH = SoundEventImpl.get("minecraft:block.frogspawn.hatch");
+
+    SoundEvent BLOCK_FROGSPAWN_HIT = SoundEventImpl.get("minecraft:block.frogspawn.hit");
+
+    SoundEvent BLOCK_FROGSPAWN_PLACE = SoundEventImpl.get("minecraft:block.frogspawn.place");
+
+    SoundEvent ENTITY_FROG_AMBIENT = SoundEventImpl.get("minecraft:entity.frog.ambient");
+
+    SoundEvent ENTITY_FROG_DEATH = SoundEventImpl.get("minecraft:entity.frog.death");
+
+    SoundEvent ENTITY_FROG_EAT = SoundEventImpl.get("minecraft:entity.frog.eat");
+
+    SoundEvent ENTITY_FROG_HURT = SoundEventImpl.get("minecraft:entity.frog.hurt");
+
+    SoundEvent ENTITY_FROG_LAY_SPAWN = SoundEventImpl.get("minecraft:entity.frog.lay_spawn");
+
+    SoundEvent ENTITY_FROG_LONG_JUMP = SoundEventImpl.get("minecraft:entity.frog.long_jump");
+
+    SoundEvent ENTITY_FROG_STEP = SoundEventImpl.get("minecraft:entity.frog.step");
+
+    SoundEvent ENTITY_FROG_TOUNGE = SoundEventImpl.get("minecraft:entity.frog.tounge");
+
     SoundEvent BLOCK_ROOTS_BREAK = SoundEventImpl.get("minecraft:block.roots.break");
 
     SoundEvent BLOCK_ROOTS_STEP = SoundEventImpl.get("minecraft:block.roots.step");
@@ -1175,6 +1217,16 @@ interface SoundEvents {
 
     SoundEvent ENTITY_MAGMA_CUBE_SQUISH_SMALL = SoundEventImpl.get("minecraft:entity.magma_cube.squish_small");
 
+    SoundEvent BLOCK_MANGROVE_ROOTS_BREAK = SoundEventImpl.get("minecraft:block.mangrove_roots.break");
+
+    SoundEvent BLOCK_MANGROVE_ROOTS_FALL = SoundEventImpl.get("minecraft:block.mangrove_roots.fall");
+
+    SoundEvent BLOCK_MANGROVE_ROOTS_HIT = SoundEventImpl.get("minecraft:block.mangrove_roots.hit");
+
+    SoundEvent BLOCK_MANGROVE_ROOTS_PLACE = SoundEventImpl.get("minecraft:block.mangrove_roots.place");
+
+    SoundEvent BLOCK_MANGROVE_ROOTS_STEP = SoundEventImpl.get("minecraft:block.mangrove_roots.step");
+
     SoundEvent BLOCK_MEDIUM_AMETHYST_BUD_BREAK = SoundEventImpl.get("minecraft:block.medium_amethyst_bud.break");
 
     SoundEvent BLOCK_MEDIUM_AMETHYST_BUD_PLACE = SoundEventImpl.get("minecraft:block.medium_amethyst_bud.place");
@@ -1228,6 +1280,36 @@ interface SoundEvents {
     SoundEvent BLOCK_MOSS_PLACE = SoundEventImpl.get("minecraft:block.moss.place");
 
     SoundEvent BLOCK_MOSS_STEP = SoundEventImpl.get("minecraft:block.moss.step");
+
+    SoundEvent BLOCK_MUD_BREAK = SoundEventImpl.get("minecraft:block.mud.break");
+
+    SoundEvent BLOCK_MUD_FALL = SoundEventImpl.get("minecraft:block.mud.fall");
+
+    SoundEvent BLOCK_MUD_HIT = SoundEventImpl.get("minecraft:block.mud.hit");
+
+    SoundEvent BLOCK_MUD_PLACE = SoundEventImpl.get("minecraft:block.mud.place");
+
+    SoundEvent BLOCK_MUD_STEP = SoundEventImpl.get("minecraft:block.mud.step");
+
+    SoundEvent BLOCK_MUD_BRICKS_BREAK = SoundEventImpl.get("minecraft:block.mud_bricks.break");
+
+    SoundEvent BLOCK_MUD_BRICKS_FALL = SoundEventImpl.get("minecraft:block.mud_bricks.fall");
+
+    SoundEvent BLOCK_MUD_BRICKS_HIT = SoundEventImpl.get("minecraft:block.mud_bricks.hit");
+
+    SoundEvent BLOCK_MUD_BRICKS_PLACE = SoundEventImpl.get("minecraft:block.mud_bricks.place");
+
+    SoundEvent BLOCK_MUD_BRICKS_STEP = SoundEventImpl.get("minecraft:block.mud_bricks.step");
+
+    SoundEvent BLOCK_MUDDY_MANGROVE_ROOTS_BREAK = SoundEventImpl.get("minecraft:block.muddy_mangrove_roots.break");
+
+    SoundEvent BLOCK_MUDDY_MANGROVE_ROOTS_FALL = SoundEventImpl.get("minecraft:block.muddy_mangrove_roots.fall");
+
+    SoundEvent BLOCK_MUDDY_MANGROVE_ROOTS_HIT = SoundEventImpl.get("minecraft:block.muddy_mangrove_roots.hit");
+
+    SoundEvent BLOCK_MUDDY_MANGROVE_ROOTS_PLACE = SoundEventImpl.get("minecraft:block.muddy_mangrove_roots.place");
+
+    SoundEvent BLOCK_MUDDY_MANGROVE_ROOTS_STEP = SoundEventImpl.get("minecraft:block.muddy_mangrove_roots.step");
 
     SoundEvent ENTITY_MULE_AMBIENT = SoundEventImpl.get("minecraft:entity.mule.ambient");
 
@@ -1285,6 +1367,8 @@ interface SoundEvents {
 
     SoundEvent MUSIC_NETHER_CRIMSON_FOREST = SoundEventImpl.get("minecraft:music.nether.crimson_forest");
 
+    SoundEvent MUSIC_OVERWORLD_DEEP_DARK = SoundEventImpl.get("minecraft:music.overworld.deep_dark");
+
     SoundEvent MUSIC_OVERWORLD_DRIPSTONE_CAVES = SoundEventImpl.get("minecraft:music.overworld.dripstone_caves");
 
     SoundEvent MUSIC_OVERWORLD_GROVE = SoundEventImpl.get("minecraft:music.overworld.grove");
@@ -1322,6 +1406,16 @@ interface SoundEvents {
     SoundEvent BLOCK_NETHER_WART_BREAK = SoundEventImpl.get("minecraft:block.nether_wart.break");
 
     SoundEvent ITEM_NETHER_WART_PLANT = SoundEventImpl.get("minecraft:item.nether_wart.plant");
+
+    SoundEvent BLOCK_PACKED_MUD_BREAK = SoundEventImpl.get("minecraft:block.packed_mud.break");
+
+    SoundEvent BLOCK_PACKED_MUD_FALL = SoundEventImpl.get("minecraft:block.packed_mud.fall");
+
+    SoundEvent BLOCK_PACKED_MUD_HIT = SoundEventImpl.get("minecraft:block.packed_mud.hit");
+
+    SoundEvent BLOCK_PACKED_MUD_PLACE = SoundEventImpl.get("minecraft:block.packed_mud.place");
+
+    SoundEvent BLOCK_PACKED_MUD_STEP = SoundEventImpl.get("minecraft:block.packed_mud.step");
 
     SoundEvent BLOCK_STEM_BREAK = SoundEventImpl.get("minecraft:block.stem.break");
 
@@ -1799,6 +1893,32 @@ interface SoundEvents {
 
     SoundEvent BLOCK_SCAFFOLDING_STEP = SoundEventImpl.get("minecraft:block.scaffolding.step");
 
+    SoundEvent BLOCK_SCULK_SPREAD = SoundEventImpl.get("minecraft:block.sculk.spread");
+
+    SoundEvent BLOCK_SCULK_CHARGE = SoundEventImpl.get("minecraft:block.sculk.charge");
+
+    SoundEvent BLOCK_SCULK_BREAK = SoundEventImpl.get("minecraft:block.sculk.break");
+
+    SoundEvent BLOCK_SCULK_FALL = SoundEventImpl.get("minecraft:block.sculk.fall");
+
+    SoundEvent BLOCK_SCULK_HIT = SoundEventImpl.get("minecraft:block.sculk.hit");
+
+    SoundEvent BLOCK_SCULK_PLACE = SoundEventImpl.get("minecraft:block.sculk.place");
+
+    SoundEvent BLOCK_SCULK_STEP = SoundEventImpl.get("minecraft:block.sculk.step");
+
+    SoundEvent BLOCK_SCULK_CATALYST_BLOOM = SoundEventImpl.get("minecraft:block.sculk_catalyst.bloom");
+
+    SoundEvent BLOCK_SCULK_CATALYST_BREAK = SoundEventImpl.get("minecraft:block.sculk_catalyst.break");
+
+    SoundEvent BLOCK_SCULK_CATALYST_FALL = SoundEventImpl.get("minecraft:block.sculk_catalyst.fall");
+
+    SoundEvent BLOCK_SCULK_CATALYST_HIT = SoundEventImpl.get("minecraft:block.sculk_catalyst.hit");
+
+    SoundEvent BLOCK_SCULK_CATALYST_PLACE = SoundEventImpl.get("minecraft:block.sculk_catalyst.place");
+
+    SoundEvent BLOCK_SCULK_CATALYST_STEP = SoundEventImpl.get("minecraft:block.sculk_catalyst.step");
+
     SoundEvent BLOCK_SCULK_SENSOR_CLICKING = SoundEventImpl.get("minecraft:block.sculk_sensor.clicking");
 
     SoundEvent BLOCK_SCULK_SENSOR_CLICKING_STOP = SoundEventImpl.get("minecraft:block.sculk_sensor.clicking_stop");
@@ -1812,6 +1932,26 @@ interface SoundEvents {
     SoundEvent BLOCK_SCULK_SENSOR_PLACE = SoundEventImpl.get("minecraft:block.sculk_sensor.place");
 
     SoundEvent BLOCK_SCULK_SENSOR_STEP = SoundEventImpl.get("minecraft:block.sculk_sensor.step");
+
+    SoundEvent BLOCK_SCULK_SHRIEKER_BREAK = SoundEventImpl.get("minecraft:block.sculk_shrieker.break");
+
+    SoundEvent BLOCK_SCULK_SHRIEKER_FALL = SoundEventImpl.get("minecraft:block.sculk_shrieker.fall");
+
+    SoundEvent BLOCK_SCULK_SHRIEKER_HIT = SoundEventImpl.get("minecraft:block.sculk_shrieker.hit");
+
+    SoundEvent BLOCK_SCULK_SHRIEKER_PLACE = SoundEventImpl.get("minecraft:block.sculk_shrieker.place");
+
+    SoundEvent BLOCK_SCULK_SHRIEKER_STEP = SoundEventImpl.get("minecraft:block.sculk_shrieker.step");
+
+    SoundEvent BLOCK_SCULK_VEIN_BREAK = SoundEventImpl.get("minecraft:block.sculk_vein.break");
+
+    SoundEvent BLOCK_SCULK_VEIN_FALL = SoundEventImpl.get("minecraft:block.sculk_vein.fall");
+
+    SoundEvent BLOCK_SCULK_VEIN_HIT = SoundEventImpl.get("minecraft:block.sculk_vein.hit");
+
+    SoundEvent BLOCK_SCULK_VEIN_PLACE = SoundEventImpl.get("minecraft:block.sculk_vein.place");
+
+    SoundEvent BLOCK_SCULK_VEIN_STEP = SoundEventImpl.get("minecraft:block.sculk_vein.step");
 
     SoundEvent ENTITY_SHEEP_AMBIENT = SoundEventImpl.get("minecraft:entity.sheep.ambient");
 
@@ -2072,6 +2212,18 @@ interface SoundEvents {
     SoundEvent BLOCK_SWEET_BERRY_BUSH_PLACE = SoundEventImpl.get("minecraft:block.sweet_berry_bush.place");
 
     SoundEvent BLOCK_SWEET_BERRY_BUSH_PICK_BERRIES = SoundEventImpl.get("minecraft:block.sweet_berry_bush.pick_berries");
+
+    SoundEvent ENTITY_TADPOLE_DEATH = SoundEventImpl.get("minecraft:entity.tadpole.death");
+
+    SoundEvent ENTITY_TADPOLE_EAT = SoundEventImpl.get("minecraft:entity.tadpole.eat");
+
+    SoundEvent ENTITY_TADPOLE_FLOP = SoundEventImpl.get("minecraft:entity.tadpole.flop");
+
+    SoundEvent ENTITY_TADPOLE_GROW_UP = SoundEventImpl.get("minecraft:entity.tadpole.grow_up");
+
+    SoundEvent ENTITY_TADPOLE_HURT = SoundEventImpl.get("minecraft:entity.tadpole.hurt");
+
+    SoundEvent ENTITY_TADPOLE_STEP = SoundEventImpl.get("minecraft:entity.tadpole.step");
 
     SoundEvent ENCHANT_THORNS_HIT = SoundEventImpl.get("minecraft:enchant.thorns.hit");
 

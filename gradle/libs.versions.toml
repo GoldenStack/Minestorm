@@ -7,7 +7,7 @@ adventure = "4.9.3"
 kotlin = "1.6.10"
 hydrazine = "1.7.2"
 dependencyGetter = "v1.0.1"
-minestomData = "895581d464"
+minestomData = "fc07c9ebc3d75eaac4ceca0adc866b349450e0de"
 hephaistos = "2.4.2"
 jetbrainsAnnotations = "23.0.0"
 

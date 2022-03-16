@@ -61,6 +61,12 @@ interface Particles {
 
     Particle FLAME = ParticleImpl.get("minecraft:flame");
 
+    Particle SCULK_SOUL = ParticleImpl.get("minecraft:sculk_soul");
+
+    Particle SCULK_CHARGE = ParticleImpl.get("minecraft:sculk_charge");
+
+    Particle SCULK_CHARGE_POP = ParticleImpl.get("minecraft:sculk_charge_pop");
+
     Particle SOUL_FIRE_FLAME = ParticleImpl.get("minecraft:soul_fire_flame");
 
     Particle SOUL = ParticleImpl.get("minecraft:soul");
