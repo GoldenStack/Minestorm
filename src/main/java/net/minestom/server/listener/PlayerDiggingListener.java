@@ -1,5 +1,6 @@
 package net.minestom.server.listener;
 
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
@@ -25,6 +26,14 @@ public final class PlayerDiggingListener {
         final Point blockPosition = packet.blockPosition();
         final Instance instance = player.getInstance();
         if (instance == null || !instance.isChunkLoaded(blockPosition)) return;
+
+        // Prevent block data grabbing
+        int xDiff = Math.abs(blockPosition.chunkX() - player.getPosition().chunkX());
+        int zDiff = Math.abs(blockPosition.chunkZ() - player.getPosition().chunkZ());
+
+        if (xDiff > MinecraftServer.getChunkViewDistance() || zDiff > MinecraftServer.getChunkViewDistance()) {
+            return;
+        }
 
         DiggingResult diggingResult = null;
         if (status == ClientPlayerDiggingPacket.Status.STARTED_DIGGING) {
