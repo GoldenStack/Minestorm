@@ -4,9 +4,9 @@ import it.unimi.dsi.fastutil.ints.IntImmutableList;
 import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 import java.util.List;
-import java.util.function.IntUnaryOperator;
 
 public interface InventoryView {
 
@@ -16,18 +16,17 @@ public interface InventoryView {
 
     @NotNull AbstractInventory source();
 
-    default void clear() {
-        for (int i = 0; i < slots(); i++) {
-            setItemStack(i, ItemStack.AIR);
-        }
-    }
-
     default @NotNull ItemStack getItemStack(int slot) {
         return source().getItemStack(mapSlot(slot));
     }
 
     default void setItemStack(int slot, @NotNull ItemStack itemStack) {
         source().setItemStack(mapSlot(slot), itemStack);
+    }
+
+    @FunctionalInterface
+    interface SlotMapper {
+        @Range(from = 0L, to = Long.MAX_VALUE) int mapSlot(@Range(from = 0L, to = Long.MAX_VALUE) int slot);
     }
 
     interface Root extends InventoryView {
@@ -42,15 +41,15 @@ public interface InventoryView {
         }
     }
 
-    interface Tree extends InventoryView {
+    interface Node extends InventoryView {
 
         @NotNull InventoryView parent();
 
-        @NotNull IntUnaryOperator localMapper();
+        @NotNull SlotMapper localMapper();
 
         @Override
         default int mapSlot(int slot) {
-            return parent().mapSlot(localMapper().applyAsInt(slot));
+            return parent().mapSlot(localMapper().mapSlot(slot));
         }
 
         @Override
@@ -59,10 +58,10 @@ public interface InventoryView {
         }
     }
 
-    static @NotNull InventoryView selectSlots(@NotNull InventoryView view, int @NotNull ... slots) {
+    default @NotNull InventoryView fork(int @NotNull ... slots) {
         var availableSlots = new IntImmutableList(slots.clone());
-        record SelectView(@NotNull InventoryView parent, @NotNull IntUnaryOperator localMapper, int slots) implements Tree {}
-        return new SelectView(view, availableSlots::getInt, availableSlots.size());
+        record SelectView(@NotNull InventoryView parent, @NotNull SlotMapper localMapper, int slots) implements Node {}
+        return new SelectView(this, availableSlots::getInt, availableSlots.size());
     }
 
     static @NotNull InventoryView union(@NotNull InventoryView @NotNull ... views) {

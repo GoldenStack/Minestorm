@@ -3,8 +3,6 @@ package net.minestom.server.inventory.view;
 import net.minestom.server.inventory.AbstractInventory;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.IntUnaryOperator;
-
 public record BrewingStandView(@NotNull AbstractInventory source) implements InventoryView.Root {
 
     public @NotNull Results results() {
@@ -17,8 +15,8 @@ public record BrewingStandView(@NotNull AbstractInventory source) implements Inv
         return new Fuel(this, 1, slot -> slot + 4);
     }
 
-    public record Input(@NotNull BrewingStandView parent, int slots, @NotNull IntUnaryOperator localMapper) implements Tree {}
-    public record Results(@NotNull BrewingStandView parent, int slots, @NotNull IntUnaryOperator localMapper) implements Tree {}
-    public record Fuel(@NotNull BrewingStandView parent, int slots, @NotNull IntUnaryOperator localMapper) implements Tree {}
+    public record Input(@NotNull BrewingStandView parent, int slots, @NotNull SlotMapper localMapper) implements Node {}
+    public record Results(@NotNull BrewingStandView parent, int slots, @NotNull SlotMapper localMapper) implements Node {}
+    public record Fuel(@NotNull BrewingStandView parent, int slots, @NotNull SlotMapper localMapper) implements Node {}
 
 }
