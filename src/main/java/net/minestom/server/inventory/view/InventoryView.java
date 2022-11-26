@@ -1,97 +1,56 @@
 package net.minestom.server.inventory.view;
 
-import it.unimi.dsi.fastutil.ints.IntImmutableList;
-import net.minestom.server.inventory.AbstractInventory;
-import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Range;
 
-import java.util.List;
-
+/**
+ * Provides a view into an inventory via the manipulation of slot IDs. They aren't tied to any specific inventory, so it
+ * must be provided with each usage of the view that would need an inventory.<br>
+ * <b>All valid slot IDs, regardless of the context, should be greater than or equal to zero.</b>
+ */
 public interface InventoryView {
 
-    int slots();
-
-    int mapSlot(int slot);
-
-    @NotNull AbstractInventory source();
-
-    default @NotNull ItemStack getItemStack(int slot) {
-        return source().getItemStack(mapSlot(slot));
+    /**
+     * Creates a new view that provides a view into a contiguous section, with the external ID {@code min} being mapped
+     * to the local ID {@code 0} and the external id {@code max} being mapped to {@code max - min}, and vice versa,
+     * including all values in-between.<br>
+     * <b>Importantly, the maximum value is inclusive - so, for example, providing a view into the first four values of
+     * any inventory would be {@code InventoryView.contiguous(0, 3)}</b>
+     * @param min the minimum slot value
+     * @param max the maximum slot value
+     * @return an inventory view providing a window into the provided range
+     */
+    static @NotNull InventoryView contiguous(int min, int max) {
+        return new InventoryViewImpl.ContiguousFork(min, max);
     }
 
-    default void setItemStack(int slot, @NotNull ItemStack itemStack) {
-        source().setItemStack(mapSlot(slot), itemStack);
-    }
+    /**
+     * Returns the size of this view, which is the number of slots that it has.<br>
+     * This number must always be greater than or equal to zero, and it indicates that the local slot IDs of 0
+     * (inclusive) to {@code size()} (exclusive) must be valid. With a size of zero, no IDs are valid.
+     * @return the size of this view
+     */
+    int size();
 
-    @FunctionalInterface
-    interface SlotMapper {
-        @Range(from = 0L, to = Long.MAX_VALUE) int mapSlot(@Range(from = 0L, to = Long.MAX_VALUE) int slot);
-    }
+    /**
+     * Converts the local slot ID, which is between (inclusive) 0 and (exclusive) {@link #size()}, to a valid "external"
+     * slot ID. Importantly, this resultant "external" ID may be converted further, so, when considering a tree-based
+     * example, it should only convert it to an ID that would be valid to its parent.<br>
+     * If the provided slot ID is valid, behaviour is undefined, but -1 should generally be returned.
+     * @param slot the local slot ID to convert
+     * @return the non-local slot ID
+     */
+    int localToExternal(int slot);
 
-    interface Root extends InventoryView {
-        @Override
-        default int slots() {
-            return source().getSize();
-        }
-
-        @Override
-        default int mapSlot(int slot) {
-            return slot;
-        }
-    }
-
-    interface Node extends InventoryView {
-
-        @NotNull InventoryView parent();
-
-        @NotNull SlotMapper localMapper();
-
-        @Override
-        default int mapSlot(int slot) {
-            return parent().mapSlot(localMapper().mapSlot(slot));
-        }
-
-        @Override
-        default @NotNull AbstractInventory source() {
-            return parent().source();
-        }
-    }
-
-    default @NotNull InventoryView fork(int @NotNull ... slots) {
-        var availableSlots = new IntImmutableList(slots.clone());
-        record SelectView(@NotNull InventoryView parent, @NotNull SlotMapper localMapper, int slots) implements Node {}
-        return new SelectView(this, availableSlots::getInt, availableSlots.size());
-    }
-
-    static @NotNull InventoryView union(@NotNull InventoryView @NotNull ... views) {
-        if (views.length == 0) {
-            throw new IllegalArgumentException("Unions must have at least one view!");
-        }
-        var list = List.of(views);
-        var size = list.stream().mapToInt(InventoryView::slots).sum();
-
-        var source = list.get(0).source();
-        for (var view : views) {
-            if (view.source() != source) {
-                throw new IllegalArgumentException("All views must have the same source!");
-            }
-        }
-
-        record Union(@NotNull List<InventoryView> views, @NotNull AbstractInventory source, int slots) implements InventoryView {
-            @Override
-            public int mapSlot(int slot) {
-                for (var view : views) {
-                    if (slot < view.slots()) {
-                        return view.mapSlot(slot);
-                    }
-                    slot -= view.slots();
-                }
-                return views.get(views.size() - 1).mapSlot(slot);
-            }
-        }
-
-        return new Union(list, source, size);
+    /**
+     * Creates a new view that provides a view into a contiguous section of this inventory, following the same mechanics
+     * as {@link #contiguous(int, int)} except for that the new view's external IDs are equivalent to the local IDs for
+     * this view.
+     * @param min the minimum slot value
+     * @param max the maximum slot value
+     * @return an inventory view providing a window into the provided range of this inventory
+     */
+    default @NotNull InventoryView fork(int min, int max) {
+        return new InventoryViewImpl.Joiner(this, contiguous(min, max));
     }
 
 }
