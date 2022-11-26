@@ -12,9 +12,9 @@ import org.jetbrains.annotations.NotNull;
 public interface InventoryView {
 
     /**
-     * Creates a new view that provides a view into a contiguous section, with the external ID {@code min} being mapped
-     * to the local ID {@code 0} and the external id {@code max} being mapped to {@code max - min}, and vice versa,
-     * including all values in-between.<br>
+     * Creates a new view that provides a window into a contiguous section, with the external ID {@code min} being
+     * mapped to the local ID {@code 0} and the external id {@code max} being mapped to {@code max - min}, and vice
+     * versa, including all values in-between.<br>
      * <b>Importantly, the maximum value is inclusive - so, for example, providing a view into the first four values of
      * any inventory would be {@code InventoryView.contiguous(0, 3)}</b>
      * @param min the minimum slot value
@@ -23,6 +23,16 @@ public interface InventoryView {
      */
     static @NotNull InventoryView contiguous(int min, int max) {
         return new InventoryViewImpl.ContiguousFork(min, max);
+    }
+
+    /**
+     * Creates a new view that provides a window into a specific slot, with the external ID {@code slot} being mapped to
+     * the local ID {@code 0}, and vice versa.
+     * @param slot the slot to view
+     * @return an inventory view providing a window into the provided slot
+     */
+    static @NotNull InventoryView.Singular singular(int slot) {
+        return new InventoryViewImpl.ContiguousFork(slot, slot);
     }
 
     /**
@@ -72,15 +82,26 @@ public interface InventoryView {
     int localToExternal(int slot);
 
     /**
-     * Creates a new view that provides a view into a contiguous section of this inventory, following the same mechanics
-     * as {@link #contiguous(int, int)} except for that the new view's external IDs are equivalent to the local IDs for
-     * this view.
+     * Creates a new view that provides a window into a contiguous section of this inventory, following the same
+     * semantics as {@link #contiguous(int, int)} except for that the new view's external IDs are equivalent to the
+     * local IDs for this view.
      * @param min the minimum slot value
      * @param max the maximum slot value
      * @return an inventory view providing a window into the provided range of this inventory
      */
     default @NotNull InventoryView fork(int min, int max) {
         return new InventoryViewImpl.Joiner(this, contiguous(min, max));
+    }
+
+    /**
+     * Creates a new view that provides a window into a specific slot, following the same semantics as
+     * {@link #singular(int)} except for that the new view's external ID is equal to the provided local ID for this
+     * view.
+     * @param slot the slot to view
+     * @return an inventory view providing a window into the specific slot of this inventory
+     */
+    default @NotNull InventoryView.Singular fork(int slot) {
+        return new InventoryViewImpl.Joiner(this, contiguous(slot, slot));
     }
 
     /**

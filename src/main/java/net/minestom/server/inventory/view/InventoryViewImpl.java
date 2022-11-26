@@ -4,7 +4,10 @@ import org.jetbrains.annotations.NotNull;
 
 class InventoryViewImpl {
 
-    record ContiguousFork(int min, int max) implements InventoryView {
+    // Implements InventoryView.Singular so that it can be treated as it when needed
+    //  (i.e. when we know that it must be singular, and so code duplication can be avoided)
+    // This is safe because implementing Singular doesn't actually have any side effects; it just adds utility methods.
+    record ContiguousFork(int min, int max) implements InventoryView.Singular {
         @Override
         public int size() {
             return min - max + 1; // add 1 because `max` is inclusive
@@ -17,7 +20,10 @@ class InventoryViewImpl {
     }
 
     // Joins two views together, essentially treating the child as the, well, child of the parent
-    record Joiner(@NotNull InventoryView parent, @NotNull InventoryView child) implements InventoryView {
+    // Implements InventoryView.Singular so that it can be treated as it when needed
+    //  (i.e. when we know that it must be singular, and so code duplication can be avoided)
+    // This is safe because implementing Singular doesn't actually have any side effects; it just adds utility methods.
+    record Joiner(@NotNull InventoryView parent, @NotNull InventoryView child) implements InventoryView.Singular {
         @Override
         public int size() {
             return child.size();
