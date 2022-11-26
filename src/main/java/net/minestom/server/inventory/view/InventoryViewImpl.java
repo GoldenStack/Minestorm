@@ -7,6 +7,7 @@ class InventoryViewImpl {
     // Implements InventoryView.Singular so that it can be treated as it when needed
     //  (i.e. when we know that it must be singular, and so code duplication can be avoided)
     // This is safe because implementing Singular doesn't actually have any side effects; it just adds utility methods.
+    //  (if Singular ever gets any actual side effects, this needs to be changed)
     record ContiguousFork(int min, int max) implements InventoryView.Singular {
         @Override
         public int size() {
@@ -15,6 +16,9 @@ class InventoryViewImpl {
 
         @Override
         public int localToExternal(int slot) {
+            if (slot < min || slot > max) {
+                return -1;
+            }
             return slot + min;
         }
     }
@@ -23,6 +27,7 @@ class InventoryViewImpl {
     // Implements InventoryView.Singular so that it can be treated as it when needed
     //  (i.e. when we know that it must be singular, and so code duplication can be avoided)
     // This is safe because implementing Singular doesn't actually have any side effects; it just adds utility methods.
+    //  (if Singular ever gets any actual side effects, this needs to be changed)
     record Joiner(@NotNull InventoryView parent, @NotNull InventoryView child) implements InventoryView.Singular {
         @Override
         public int size() {

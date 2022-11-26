@@ -37,7 +37,9 @@ public interface InventoryView {
 
     /**
      * A generic interface for a view that has only one slot, and thus can have simple getters and setters that don't
-     * require a slot to be specified.
+     * require a slot to be specified.<br>
+     * Implementing this interface should not have any side effects and should simply make it easier to use single-slot
+     * inventories.
      */
     interface Singular extends InventoryView {
 
