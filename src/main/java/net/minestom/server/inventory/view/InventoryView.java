@@ -1,5 +1,7 @@
 package net.minestom.server.inventory.view;
 
+import net.minestom.server.inventory.AbstractInventory;
+import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -21,6 +23,34 @@ public interface InventoryView {
      */
     static @NotNull InventoryView contiguous(int min, int max) {
         return new InventoryViewImpl.ContiguousFork(min, max);
+    }
+
+    /**
+     * A generic interface for a view that has only one slot, and thus can have simple getters and setters that don't
+     * require a slot to be specified.
+     */
+    interface Singular extends InventoryView {
+
+        /**
+         * Gets the item in the inventory. Because this interface assumes that inventories only have one slot, the local
+         * slot ID can be omitted.
+         * @param inventory the inventory to get the item of
+         * @return the item in the inventory
+         */
+        default @NotNull ItemStack get(@NotNull AbstractInventory inventory) {
+            return get(inventory, 0);
+        }
+
+        /**
+         * Sets the item in the inventory to the provided item. Because this interface assumes that inventories only
+         * have one slot, the local slot ID can be omitted.
+         * @param inventory the inventory to set the item of
+         * @param itemStack the item that the inventory should be set to
+         */
+        default void set(@NotNull AbstractInventory inventory, @NotNull ItemStack itemStack) {
+            set(inventory, 0, itemStack);
+        }
+
     }
 
     /**
@@ -51,6 +81,26 @@ public interface InventoryView {
      */
     default @NotNull InventoryView fork(int min, int max) {
         return new InventoryViewImpl.Joiner(this, contiguous(min, max));
+    }
+
+    /**
+     * Gets the item at location of the provided local slot ID in the provided inventory.
+     * @param inventory the inventory to get the item from
+     * @param slot the specific slot to read
+     * @return the item at the slot in the inventory
+     */
+    default @NotNull ItemStack get(@NotNull AbstractInventory inventory, int slot) {
+        return inventory.getItemStack(localToExternal(slot));
+    }
+
+    /**
+     * Sets the item at the location of the provided local slot ID in the provided inventory to the item.
+     * @param inventory the inventory to set the item in
+     * @param slot the specific slot to set
+     * @param itemStack the item to set the slot to
+     */
+    default void set(@NotNull AbstractInventory inventory, int slot, @NotNull ItemStack itemStack) {
+        inventory.setItemStack(localToExternal(slot), itemStack);
     }
 
 }
