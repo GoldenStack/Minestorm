@@ -11,12 +11,12 @@ class InventoryViewImpl {
     record ContiguousFork(int min, int max) implements InventoryView.Singular {
         @Override
         public int size() {
-            return min - max + 1; // add 1 because `max` is inclusive
+            return max - min + 1; // add 1 because `max` is inclusive
         }
 
         @Override
         public int localToExternal(int slot) {
-            if (slot < min || slot > max) {
+            if (slot < 0 || slot >= size()) {
                 return -1;
             }
             return slot + min;
