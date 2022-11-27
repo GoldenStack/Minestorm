@@ -2,6 +2,8 @@ package net.minestom.server.inventory.view;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 class InventoryViewImpl {
 
     // Implements InventoryView.Singular so that it can be treated as it when needed
@@ -37,6 +39,33 @@ class InventoryViewImpl {
         @Override
         public int localToExternal(int slot) {
             return parent.localToExternal(child.localToExternal(slot));
+        }
+    }
+
+    record Union(@NotNull List<InventoryView> views, int size) implements InventoryView.Singular {
+
+        Union(@NotNull List<InventoryView> views) {
+            this(views, views.stream().mapToInt(InventoryView::size).sum());
+        }
+
+        Union {
+            views = List.copyOf(views);
+        }
+
+        @Override
+        public int localToExternal(int slot) {
+            if (slot < 0 || slot >= size) {
+                return -1;
+            }
+            for (var view : views) {
+                if (slot < view.size()) {
+                    return view.localToExternal(slot);
+                }
+                slot -= view.size();
+            }
+            // this code should never be run because, at this point, `slot >= size()`
+            // must be true, but we already verified that it's false at the start.
+            return -1;
         }
     }
 

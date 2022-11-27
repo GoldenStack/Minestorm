@@ -4,6 +4,8 @@ import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 /**
  * Provides a view into an inventory via the manipulation of slot IDs. They aren't tied to any specific inventory, so it
  * must be provided with each usage of the view that would need an inventory.<br>
@@ -33,6 +35,19 @@ public interface InventoryView {
      */
     static @NotNull InventoryView.Singular singular(int slot) {
         return new InventoryViewImpl.ContiguousFork(slot, slot);
+    }
+
+    /**
+     * Adds together the provided views into a new view that represents the union of all of them. Essentially, this
+     * adds the local IDs of the provided views together into one solid block.<br>
+     * For example, consider two views that each have local slot IDs 0 through 3. A union of the two would have local
+     * slots 0 through 7, with 0-3 being mapped to the first view's slots 0-3 and with local slots 4-7 being mapped to
+     * the second view's slots 0-3.
+     * @param views the views to add together
+     * @return the unionized view
+     */
+    static @NotNull InventoryView union(@NotNull InventoryView @NotNull ... views) {
+        return new InventoryViewImpl.Union(List.of(views));
     }
 
     /**
