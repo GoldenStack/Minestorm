@@ -63,6 +63,28 @@ public interface InventoryView {
     }
 
     /**
+     * Joins the two provided views, mapping the child's external slot IDs to the parent's local slot IDs.
+     * @param parent the parent in this relationship
+     * @param child the child in this relationship
+     * @return a view joining the two provided views
+     */
+    static @NotNull InventoryView join(@NotNull InventoryView parent, @NotNull InventoryView child) {
+        return new InventoryViewImpl.Joiner(parent, child);
+    }
+
+    /**
+     * Joins the two provided views, mapping the child's external slot ID to one of the parent's local slot IDs. The
+     * sole difference between this and {@link #join(InventoryView, InventoryView)} is that the child and returned value
+     * are treated as singular views.
+     * @param parent the parent in this relationship
+     * @param child the child in this relationship
+     * @return a view joining the two provided views
+     */
+    static @NotNull InventoryView.Singular join(@NotNull InventoryView parent, @NotNull InventoryView.Singular child) {
+        return new InventoryViewImpl.Joiner(parent, child);
+    }
+
+    /**
      * A generic interface for a view that has only one slot, and thus can have simple getters and setters that don't
      * require a slot to be specified.<br>
      * This interface is meant to exclusively make it easier to use single-slot views, so it can be relied upon that
@@ -130,7 +152,7 @@ public interface InventoryView {
      * @return an inventory view providing a window into the provided range of this inventory
      */
     default @NotNull InventoryView fork(int min, int max) {
-        return new InventoryViewImpl.Joiner(this, contiguous(min, max));
+        return join(this, contiguous(min, max));
     }
 
     /**
@@ -141,7 +163,7 @@ public interface InventoryView {
      * @return an inventory view providing a window into the specific slot of this inventory
      */
     default @NotNull InventoryView.Singular fork(int slot) {
-        return new InventoryViewImpl.Joiner(this, contiguous(slot, slot));
+        return join(this, singular(slot));
     }
 
     /**
@@ -151,7 +173,7 @@ public interface InventoryView {
      * @return an inventory view providing a window into the provided external slot IDs, preserving their order
      */
     default @NotNull InventoryView fork(int @NotNull ... slots) {
-        return new InventoryViewImpl.Joiner(this, arbitrary(slots));
+        return join(this, arbitrary(slots));
     }
 
     /**
