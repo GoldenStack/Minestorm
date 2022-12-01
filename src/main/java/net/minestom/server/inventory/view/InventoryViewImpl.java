@@ -1,5 +1,7 @@
 package net.minestom.server.inventory.view;
 
+import it.unimi.dsi.fastutil.ints.IntImmutableList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -66,6 +68,26 @@ class InventoryViewImpl {
             // this code should never be run because, at this point, `slot >= size()`
             // must be true, but we already verified that it's false at the start.
             return -1;
+        }
+    }
+
+    record Arbitrary(@NotNull IntList slots) implements InventoryView.Singular {
+
+        Arbitrary {
+            slots = new IntImmutableList(slots);
+        }
+
+        @Override
+        public int size() {
+            return slots.size();
+        }
+
+        @Override
+        public int localToExternal(int slot) {
+            if (slot < 0 || slot >= size()) {
+                return -1;
+            }
+            return slots.getInt(slot);
         }
     }
 

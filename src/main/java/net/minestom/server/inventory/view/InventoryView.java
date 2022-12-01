@@ -1,5 +1,6 @@
 package net.minestom.server.inventory.view;
 
+import it.unimi.dsi.fastutil.ints.IntImmutableList;
 import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -51,6 +52,16 @@ public interface InventoryView {
     }
 
     /**
+     * Creates a new view, with the provided external slot IDs being mapped to local IDs linearly, from 0. This should
+     * generally only be used for complex views that really require it.
+     * @param slots the external slot IDs to be mapped
+     * @return the created view that represents the slots
+     */
+    static @NotNull InventoryView arbitrary(int @NotNull ... slots) {
+        return new InventoryViewImpl.Arbitrary(new IntImmutableList(slots));
+    }
+
+    /**
      * A generic interface for a view that has only one slot, and thus can have simple getters and setters that don't
      * require a slot to be specified.<br>
      * Implementing this interface should not have any side effects and should simply make it easier to use single-slot
@@ -83,7 +94,7 @@ public interface InventoryView {
     /**
      * Returns the size of this view, which is the number of slots that it has.<br>
      * This number must always be greater than or equal to zero, and it indicates that the local slot IDs of 0
-     * (inclusive) to {@code size()} (exclusive) must be valid. With a size of zero, no IDs are valid.
+     * (inclusive) to {@code size()} (exclusive) must always be valid. With a size of zero, no IDs are valid.
      * @return the size of this view
      */
     int size();
@@ -122,6 +133,16 @@ public interface InventoryView {
     }
 
     /**
+     * Creates a new view that provides a window into the provided slots, from 0, following the same semantics as
+     * {@link #arbitrary(int...)}.
+     * @param slots the slots to incorporate into a view
+     * @return an inventory view providing a window into the provided external slot IDs, preserving their order
+     */
+    default @NotNull InventoryView fork(int @NotNull ... slots) {
+        return new InventoryViewImpl.Joiner(this, arbitrary(slots));
+    }
+
+    /**
      * Gets the item at location of the provided local slot ID in the provided inventory.
      * @param inventory the inventory to get the item from
      * @param slot the specific slot to read
@@ -139,6 +160,20 @@ public interface InventoryView {
      */
     default void set(@NotNull AbstractInventory inventory, int slot, @NotNull ItemStack itemStack) {
         inventory.setItemStack(localToExternal(slot), itemStack);
+    }
+
+    /**
+     * Collects the items in the provided inventory into a list. This list is guaranteed to have a size of
+     * {@link #size()}, and the items in the list are guaranteed to be non-null.
+     * @param inventory the source of the items
+     * @return the list of items from the inventory
+     */
+    default @NotNull List<@NotNull ItemStack> collect(@NotNull AbstractInventory inventory) {
+        ItemStack[] items = new ItemStack[size()];
+        for (int i = 0; i < size(); i++) {
+            items[i] = get(inventory, i);
+        }
+        return List.of(items);
     }
 
 }
