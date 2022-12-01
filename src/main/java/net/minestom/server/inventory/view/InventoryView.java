@@ -1,5 +1,6 @@
 package net.minestom.server.inventory.view;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import it.unimi.dsi.fastutil.ints.IntImmutableList;
 import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.item.ItemStack;
@@ -194,6 +195,18 @@ public interface InventoryView {
      */
     default void set(@NotNull AbstractInventory inventory, int slot, @NotNull ItemStack itemStack) {
         inventory.setItemStack(localToExternal(slot), itemStack);
+    }
+
+    /**
+     * Fills the provided inventory with items, according to what the filler provides. Each valid local slot ID will be
+     * provided to the filler exactly once.
+     * @param inventory the inventory to fill
+     * @param filler the function that provides items for each slot
+     */
+    default void fill(@NotNull AbstractInventory inventory, @NotNull Int2ObjectFunction<@NotNull ItemStack> filler) {
+        for (int i = 0; i < size(); i++) {
+            inventory.setItemStack(localToExternal(i), filler.apply(i));
+        }
     }
 
     /**

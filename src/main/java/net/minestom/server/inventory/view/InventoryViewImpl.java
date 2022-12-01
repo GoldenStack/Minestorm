@@ -13,6 +13,15 @@ class InventoryViewImpl {
     // This is safe because implementing Singular doesn't actually have any side effects; it just adds utility methods.
     //  (if Singular ever gets any actual side effects, this needs to be changed)
     record ContiguousFork(int min, int max) implements InventoryView.Singular {
+
+        ContiguousFork {
+            if (min < 0 || max < 0) {
+                throw new IllegalArgumentException("Slot IDs cannot be negatively signed!");
+            } else if (min > max) {
+                throw new IllegalArgumentException("The minimum value cannot be greater than the maximum!");
+            }
+        }
+
         @Override
         public int size() {
             return max - min + 1; // add 1 because `max` is inclusive
@@ -33,6 +42,13 @@ class InventoryViewImpl {
     // This is safe because implementing Singular doesn't actually have any side effects; it just adds utility methods.
     //  (if Singular ever gets any actual side effects, this needs to be changed)
     record Joiner(@NotNull InventoryView parent, @NotNull InventoryView child) implements InventoryView.Singular {
+
+        Joiner {
+            if (child.size() > parent.size()) {
+                throw new IllegalArgumentException("Children cannot be larger than their parents!");
+            }
+        }
+
         @Override
         public int size() {
             return child.size();
@@ -40,7 +56,19 @@ class InventoryViewImpl {
 
         @Override
         public int localToExternal(int slot) {
-            return parent.localToExternal(child.localToExternal(slot));
+            if (!child.isValidLocal(slot)) {
+                return -1;
+            }
+            int parentLocal = child.localToExternal(slot);
+            if (!parent.isValidLocal(parentLocal)) {
+                return -1;
+            }
+            return parent.localToExternal(parentLocal);
+        }
+
+        @Override
+        public boolean isValidLocal(int slot) {
+            return child.isValidLocal(slot) && parent.isValidLocal(child.localToExternal(slot));
         }
     }
 
@@ -75,6 +103,11 @@ class InventoryViewImpl {
 
         Arbitrary {
             slots = new IntImmutableList(slots);
+            for (var slot : slots) {
+                if (slot < 0) {
+                    throw new IllegalArgumentException("Slot IDs cannot be negatively signed!");
+                }
+            }
         }
 
         @Override
