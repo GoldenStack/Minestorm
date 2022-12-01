@@ -20,7 +20,7 @@ class InventoryViewImpl {
 
         @Override
         public int localToExternal(int slot) {
-            if (slot < 0 || slot >= size()) {
+            if (!isValidLocal(slot)) {
                 return -1;
             }
             return slot + min;
@@ -56,7 +56,7 @@ class InventoryViewImpl {
 
         @Override
         public int localToExternal(int slot) {
-            if (slot < 0 || slot >= size) {
+            if (!isValidLocal(slot)) {
                 return -1;
             }
             for (var view : views) {
@@ -84,7 +84,7 @@ class InventoryViewImpl {
 
         @Override
         public int localToExternal(int slot) {
-            if (slot < 0 || slot >= size()) {
+            if (!isValidLocal(slot)) {
                 return -1;
             }
             return slots.getInt(slot);

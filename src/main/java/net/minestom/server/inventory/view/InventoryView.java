@@ -18,10 +18,11 @@ public interface InventoryView {
      * Creates a new view that provides a window into a contiguous section, with the external ID {@code min} being
      * mapped to the local ID {@code 0} and the external id {@code max} being mapped to {@code max - min}, and vice
      * versa, including all values in-between.<br>
-     * <b>Importantly, the maximum value is inclusive - so, for example, providing a view into the first four values of
-     * any inventory would be {@code InventoryView.contiguous(0, 3)}</b>
-     * @param min the minimum slot value
-     * @param max the maximum slot value
+     * <b>Importantly, the maximum value is inclusive (as well as the minimum, but the minimum is usually inclusive
+     * anyway - so, for example, providing a view into the first four values of any inventory would be
+     * {@code InventoryView.contiguous(0, 3)}</b>
+     * @param min the minimum slot value (inclusive)
+     * @param max the maximum slot value (inclusive)
      * @return an inventory view providing a window into the provided range
      */
     static @NotNull InventoryView contiguous(int min, int max) {
@@ -64,8 +65,8 @@ public interface InventoryView {
     /**
      * A generic interface for a view that has only one slot, and thus can have simple getters and setters that don't
      * require a slot to be specified.<br>
-     * Implementing this interface should not have any side effects and should simply make it easier to use single-slot
-     * inventories.
+     * This interface is meant to exclusively make it easier to use single-slot views, so it can be relied upon that
+     * implementing this won't have any side effects (e.g. method overriding) and that it will simply add a new API.
      */
     interface Singular extends InventoryView {
 
@@ -108,6 +109,17 @@ public interface InventoryView {
      * @return the non-local slot ID
      */
     int localToExternal(int slot);
+
+    /**
+     * Assures that the provided local slot ID is valid in this view, returning a boolean representing whether or not it
+     * is. Generally, {@link #localToExternal(int)} should return an invalid ID (e.g. -1) if and only if this method
+     * returns false.
+     * @param slot the local slot ID to verify
+     * @return true if the id is valid, and false if not
+     */
+    default boolean isValidLocal(int slot) {
+        return slot >= 0 && slot < size();
+    }
 
     /**
      * Creates a new view that provides a window into a contiguous section of this inventory, following the same
