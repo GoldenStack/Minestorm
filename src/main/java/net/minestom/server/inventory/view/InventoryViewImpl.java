@@ -124,4 +124,19 @@ class InventoryViewImpl {
         }
     }
 
+    // Intended to be used to shorten implementation code
+    interface ExtendableRedirect extends InventoryView {
+        @NotNull InventoryView view();
+
+        @Override
+        default int size() {
+            return view().size();
+        }
+
+        @Override
+        default int localToExternal(int slot) {
+            return view().localToExternal(slot);
+        }
+    }
+
 }
