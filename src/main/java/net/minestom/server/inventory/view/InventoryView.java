@@ -109,25 +109,25 @@ public interface InventoryView {
      * Creates a new view that provides a window into a contiguous section, with the external ID {@code min} being
      * mapped to the local ID {@code 0} and the external id {@code max} being mapped to {@code max - min}, and vice
      * versa, including all values in-between.<br>
-     * <b>Importantly, the maximum value is inclusive (as well as the minimum, but the minimum is usually inclusive
-     * anyway - so, for example, providing a view into the first four values of any inventory would be
+     * <b>Importantly, the maximum value is inclusive (as well as the minimum, but minimum values are usually inclusive
+     * anyway) - so, for example, providing a view into the first four values of any inventory would be
      * {@code InventoryView.contiguous(0, 3)}</b>
-     * @param min the minimum slot value (inclusive)
-     * @param max the maximum slot value (inclusive)
+     * @param externalMin the minimum external slot value (inclusive)
+     * @param externalMax the maximum external slot value (inclusive)
      * @return an inventory view providing a window into the provided range
      */
-    static @NotNull InventoryView contiguous(int min, int max) {
-        return new InventoryViewImpl.ContiguousFork(min, max);
+    static @NotNull InventoryView contiguous(int externalMin, int externalMax) {
+        return new InventoryViewImpl.ContiguousFork(externalMin, externalMax);
     }
 
     /**
      * Creates a new view that provides a window into a specific slot, with the external ID {@code slot} being mapped to
      * the local ID {@code 0}, and vice versa.
-     * @param slot the slot to view
+     * @param externalSlot the external slot to view
      * @return an inventory view providing a window into the provided slot
      */
-    static @NotNull InventoryView.Singular singular(int slot) {
-        return new InventoryViewImpl.ContiguousFork(slot, slot);
+    static @NotNull InventoryView.Singular singular(int externalSlot) {
+        return new InventoryViewImpl.ContiguousFork(externalSlot, externalSlot);
     }
 
     /**
@@ -146,11 +146,11 @@ public interface InventoryView {
     /**
      * Creates a new view, with the provided external slot IDs being mapped to local IDs linearly, from 0. This should
      * generally only be used for complex views that really require it.
-     * @param slots the external slot IDs to be mapped
+     * @param externalSlots the external slot IDs to be mapped
      * @return the created view that represents the slots
      */
-    static @NotNull InventoryView arbitrary(int @NotNull ... slots) {
-        return new InventoryViewImpl.Arbitrary(new IntImmutableList(slots));
+    static @NotNull InventoryView arbitrary(int @NotNull ... externalSlots) {
+        return new InventoryViewImpl.Arbitrary(new IntImmutableList(externalSlots));
     }
 
     /**
@@ -218,73 +218,75 @@ public interface InventoryView {
      * slot ID. Importantly, this resultant "external" ID may be converted further, so, when considering a tree-based
      * example, it should only convert it to an ID that would be valid to its parent.<br>
      * If the provided slot ID is valid, behaviour is undefined, but -1 should generally be returned.
-     * @param slot the local slot ID to convert
+     * @param localSlot the local slot ID to convert
      * @return the non-local slot ID
      */
-    int localToExternal(int slot);
+    int localToExternal(int localSlot);
 
     /**
      * Assures that the provided local slot ID is valid in this view, returning a boolean representing whether or not it
      * is. Generally, {@link #localToExternal(int)} should return an invalid ID (e.g. -1) if and only if this method
      * returns false.
-     * @param slot the local slot ID to verify
+     * @param localSlot the local slot ID to verify
      * @return true if the id is valid, and false if not
      */
-    default boolean isValidLocal(int slot) {
-        return slot >= 0 && slot < size();
+    default boolean isValidLocal(int localSlot) {
+        return localSlot >= 0 && localSlot < size();
     }
 
     /**
      * Creates a new view that provides a window into a contiguous section of this inventory, following the same
      * semantics as {@link #contiguous(int, int)} except for that the new view's external IDs are equivalent to the
      * local IDs for this view.
-     * @param min the minimum slot value
-     * @param max the maximum slot value
+     * @param localMin the minimum local slot value
+     * @param localMax the maximum local slot value
      * @return an inventory view providing a window into the provided range of this inventory
      */
-    default @NotNull InventoryView fork(int min, int max) {
-        return join(this, contiguous(min, max));
+    default @NotNull InventoryView fork(int localMin, int localMax) {
+        return join(this, contiguous(localMin, localMax));
     }
 
     /**
      * Creates a new view that provides a window into a specific slot, following the same semantics as
      * {@link #singular(int)} except for that the new view's external ID is equal to the provided local ID for this
      * view.
-     * @param slot the slot to view
+     * @param localSlot the local slot to view
      * @return an inventory view providing a window into the specific slot of this inventory
      */
-    default @NotNull InventoryView.Singular fork(int slot) {
-        return join(this, singular(slot));
+    default @NotNull InventoryView.Singular fork(int localSlot) {
+        return join(this, singular(localSlot));
     }
 
     /**
      * Creates a new view that provides a window into the provided slots, from 0, following the same semantics as
      * {@link #arbitrary(int...)}.
-     * @param slots the slots to incorporate into a view
+     * @param localSlots the local slots to incorporate into a view
      * @return an inventory view providing a window into the provided external slot IDs, preserving their order
      */
-    default @NotNull InventoryView fork(int @NotNull ... slots) {
-        return join(this, arbitrary(slots));
+    default @NotNull InventoryView fork(int @NotNull ... localSlots) {
+        return join(this, arbitrary(localSlots));
     }
 
     /**
      * Gets the item at location of the provided local slot ID in the provided inventory.
      * @param inventory the inventory to get the item from
-     * @param slot the specific slot to read
+     * @param localSlot the specific local slot to read
      * @return the item at the slot in the inventory
      */
-    default @NotNull ItemStack get(@NotNull AbstractInventory inventory, int slot) {
-        return inventory.getItemStack(localToExternal(slot));
+    default @NotNull ItemStack get(@NotNull AbstractInventory inventory, int localSlot) {
+        // No need to verify if the slot is valid in the inventory because the inventory will handle it
+        return inventory.getItemStack(localToExternal(localSlot));
     }
 
     /**
      * Sets the item at the location of the provided local slot ID in the provided inventory to the item.
      * @param inventory the inventory to set the item in
-     * @param slot the specific slot to set
+     * @param localSlot the specific local slot to set
      * @param itemStack the item to set the slot to
      */
-    default void set(@NotNull AbstractInventory inventory, int slot, @NotNull ItemStack itemStack) {
-        inventory.setItemStack(localToExternal(slot), itemStack);
+    default void set(@NotNull AbstractInventory inventory, int localSlot, @NotNull ItemStack itemStack) {
+        // No need to verify if the slot is valid in the inventory because the inventory will handle it
+        inventory.setItemStack(localToExternal(localSlot), itemStack);
     }
 
     /**
@@ -301,7 +303,8 @@ public interface InventoryView {
 
     /**
      * Collects the items in the provided inventory into a list. This list is guaranteed to have a size of
-     * {@link #size()}, and the items in the list are guaranteed to be non-null.
+     * {@link #size()}, and the items in the list are guaranteed to be non-null. The items in the list are collected as
+     * from local slot IDs.
      * @param inventory the source of the items
      * @return the list of items from the inventory
      */

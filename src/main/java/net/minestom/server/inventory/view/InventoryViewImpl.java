@@ -28,11 +28,11 @@ class InventoryViewImpl {
         }
 
         @Override
-        public int localToExternal(int slot) {
-            if (!isValidLocal(slot)) {
+        public int localToExternal(int localSlot) {
+            if (!isValidLocal(localSlot)) {
                 return -1;
             }
-            return slot + min;
+            return localSlot + min;
         }
     }
 
@@ -55,11 +55,11 @@ class InventoryViewImpl {
         }
 
         @Override
-        public int localToExternal(int slot) {
-            if (!child.isValidLocal(slot)) {
+        public int localToExternal(int localSlot) {
+            if (!child.isValidLocal(localSlot)) {
                 return -1;
             }
-            int parentLocal = child.localToExternal(slot);
+            int parentLocal = child.localToExternal(localSlot);
             if (!parent.isValidLocal(parentLocal)) {
                 return -1;
             }
@@ -67,8 +67,8 @@ class InventoryViewImpl {
         }
 
         @Override
-        public boolean isValidLocal(int slot) {
-            return child.isValidLocal(slot) && parent.isValidLocal(child.localToExternal(slot));
+        public boolean isValidLocal(int localSlot) {
+            return child.isValidLocal(localSlot) && parent.isValidLocal(child.localToExternal(localSlot));
         }
     }
 
@@ -83,15 +83,15 @@ class InventoryViewImpl {
         }
 
         @Override
-        public int localToExternal(int slot) {
-            if (!isValidLocal(slot)) {
+        public int localToExternal(int localSlot) {
+            if (!isValidLocal(localSlot)) {
                 return -1;
             }
             for (var view : views) {
-                if (slot < view.size()) {
-                    return view.localToExternal(slot);
+                if (localSlot < view.size()) {
+                    return view.localToExternal(localSlot);
                 }
-                slot -= view.size();
+                localSlot -= view.size();
             }
             // this code should never be run because, at this point, `slot >= size()`
             // must be true, but we already verified that it's false at the start.
@@ -116,11 +116,11 @@ class InventoryViewImpl {
         }
 
         @Override
-        public int localToExternal(int slot) {
-            if (!isValidLocal(slot)) {
+        public int localToExternal(int localSlot) {
+            if (!isValidLocal(localSlot)) {
                 return -1;
             }
-            return slots.getInt(slot);
+            return slots.getInt(localSlot);
         }
     }
 
@@ -134,8 +134,8 @@ class InventoryViewImpl {
         }
 
         @Override
-        default int localToExternal(int slot) {
-            return view().localToExternal(slot);
+        default int localToExternal(int localSlot) {
+            return view().localToExternal(localSlot);
         }
     }
 
