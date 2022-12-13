@@ -15,96 +15,6 @@ import java.util.List;
  */
 public interface InventoryView {
 
-    @NotNull Player PLAYER = new Player();
-
-    static @NotNull Player player() {
-        return InventoryView.PLAYER;
-    }
-
-    /**
-     * Represents a player's inventory
-     * @param view a contiguous section of slots 0 to 45
-     * @param main See {@link Main}
-     * @param crafting See {@link Crafting}
-     * @param armor see {@link Armor}
-     * @param offhand {@link Player#VIEW} slot 45
-     */
-    record Player(@NotNull InventoryView view,
-                  @NotNull Main main,
-                  @NotNull Crafting crafting,
-                  @NotNull Armor armor,
-                  @NotNull InventoryView.Singular offhand) implements InventoryViewImpl.ExtendableRedirect {
-        public static final @NotNull InventoryView VIEW = InventoryView.contiguous(0, 45);
-        public static final @NotNull Main MAIN = new Main();
-        public static final @NotNull Crafting CRAFTING = new Crafting();
-        public static final @NotNull Armor ARMOR = new Armor();
-        public static final @NotNull InventoryView.Singular OFFHAND = Player.VIEW.fork(45);
-
-        public Player() {
-            this(VIEW, MAIN, CRAFTING, ARMOR, OFFHAND);
-        }
-
-        /**
-         * Represents the armor in a player's inventory
-         * @param view {@link Player#VIEW} slots 41 to 44
-         * @param head {@link Armor#VIEW} slot 0
-         * @param chest {@link Armor#VIEW} slot 1
-         * @param legs {@link Armor#VIEW} slot 2
-         * @param feet {@link Armor#VIEW} slot 3
-         */
-        public record Armor(@NotNull InventoryView view,
-                            @NotNull InventoryView.Singular head,
-                            @NotNull InventoryView.Singular chest,
-                            @NotNull InventoryView.Singular legs,
-                            @NotNull InventoryView.Singular feet) implements InventoryViewImpl.ExtendableRedirect {
-            public static final @NotNull InventoryView VIEW = Player.VIEW.fork(41, 44);
-            public static final @NotNull InventoryView.Singular HEAD = VIEW.fork(0);
-            public static final @NotNull InventoryView.Singular CHEST = VIEW.fork(1);
-            public static final @NotNull InventoryView.Singular LEGS = VIEW.fork(2);
-            public static final @NotNull InventoryView.Singular FEET = VIEW.fork(3);
-
-            public Armor() {
-                this(VIEW, HEAD, CHEST, LEGS, FEET);
-            }
-        }
-
-        /**
-         * Represents the crafting section of a player's inventory
-         * @param view {@link Player#VIEW} slots 36 to 40
-         * @param result {@link Crafting#VIEW} slot 0
-         * @param input {@link Crafting#VIEW} slots 1 to 4
-         */
-        public record Crafting(@NotNull InventoryView view,
-                               @NotNull InventoryView.Singular result,
-                               @NotNull InventoryView input) implements InventoryViewImpl.ExtendableRedirect {
-            public static final @NotNull InventoryView VIEW = Player.VIEW.fork(36, 40);
-            public static final @NotNull InventoryView.Singular RESULT = VIEW.fork(0);
-            public static final @NotNull InventoryView INPUT = VIEW.fork(1, 4);
-
-            public Crafting() {
-                this(VIEW, RESULT, INPUT);
-            }
-        }
-
-        /**
-         * Represents the main section of a player's inventory
-         * @param view {@link Player#VIEW} slots 0 to 35
-         * @param hotbar {@link Main#VIEW} slots 0 to 8
-         * @param storage {@link Main#VIEW} slots 9 to 35
-         */
-        public record Main(@NotNull InventoryView view,
-                           @NotNull InventoryView hotbar,
-                           @NotNull InventoryView storage) implements InventoryViewImpl.ExtendableRedirect {
-            public static final @NotNull InventoryView VIEW = Player.VIEW.fork(0, 35);
-            public static final @NotNull InventoryView HOTBAR = VIEW.fork(0, 8);
-            public static final @NotNull InventoryView STORAGE = VIEW.fork(9, 35);
-
-            public Main() {
-                this(VIEW, HOTBAR, STORAGE);
-            }
-        }
-    }
-
     /**
      * Creates a new view that provides a window into a contiguous section, with the external ID {@code min} being
      * mapped to the local ID {@code 0} and the external id {@code max} being mapped to {@code max - min}, and vice
@@ -303,7 +213,7 @@ public interface InventoryView {
 
     /**
      * Collects the items in the provided inventory into a list. This list is guaranteed to have a size of
-     * {@link #size()}, and the items in the list are guaranteed to be non-null. The items in the list are collected as
+     * {@link #size()}, and the items in the list are guaranteed to be non-null. The items in the list are collected
      * from local slot IDs.
      * @param inventory the source of the items
      * @return the list of items from the inventory
