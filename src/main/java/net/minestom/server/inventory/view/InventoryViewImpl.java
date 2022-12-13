@@ -24,7 +24,7 @@ class InventoryViewImpl {
 
         @Override
         public int size() {
-            return max - min + 1; // add 1 because `max` is inclusive
+            return max - min;
         }
 
         @Override

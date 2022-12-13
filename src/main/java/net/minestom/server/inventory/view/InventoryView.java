@@ -16,14 +16,11 @@ import java.util.List;
 public interface InventoryView {
 
     /**
-     * Creates a new view that provides a window into a contiguous section, with the external ID {@code min} being
-     * mapped to the local ID {@code 0} and the external id {@code max} being mapped to {@code max - min}, and vice
-     * versa, including all values in-between.<br>
-     * <b>Importantly, the maximum value is inclusive (as well as the minimum, but minimum values are usually inclusive
-     * anyway) - so, for example, providing a view into the first four values of any inventory would be
-     * {@code InventoryView.contiguous(0, 3)}</b>
+     * Creates a new view that provides a window into a contiguous section, with the local slot {@code 0} being mapped
+     * to external slot {@code min} and the local slot {@code max - 1} being mapped to external slot
+     * {@code max + min - 1}, and vice versa, including all values in-between.
      * @param externalMin the minimum external slot value (inclusive)
-     * @param externalMax the maximum external slot value (inclusive)
+     * @param externalMax the maximum external slot value (exclusive)
      * @return an inventory view providing a window into the provided range
      */
     static @NotNull InventoryView contiguous(int externalMin, int externalMax) {
@@ -37,7 +34,7 @@ public interface InventoryView {
      * @return an inventory view providing a window into the provided slot
      */
     static @NotNull InventoryView.Singular singular(int externalSlot) {
-        return new InventoryViewImpl.ContiguousFork(externalSlot, externalSlot);
+        return new InventoryViewImpl.ContiguousFork(externalSlot, externalSlot + 1); // Add 1 because the max is exclusive
     }
 
     /**
