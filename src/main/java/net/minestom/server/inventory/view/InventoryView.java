@@ -125,7 +125,7 @@ public interface InventoryView {
      * Converts the local slot ID, which is between (inclusive) 0 and (exclusive) {@link #size()}, to a valid "external"
      * slot ID. Importantly, this resultant "external" ID may be converted further, so, when considering a tree-based
      * example, it should only convert it to an ID that would be valid to its parent.<br>
-     * If the provided slot ID is valid, behaviour is undefined, but -1 should generally be returned.<br>
+     * If the provided slot ID is invalid, behaviour is undefined, but -1 should generally be returned.<br>
      * This value should, when possible, be constant for each local slot ID.
      * @param localSlot the local slot ID to convert
      * @return the non-local slot ID
@@ -133,9 +133,8 @@ public interface InventoryView {
     int localToExternal(int localSlot);
 
     /**
-     * Assures that the provided local slot ID is valid in this view, returning a boolean representing whether or not it
-     * is. Generally, {@link #localToExternal(int)} should return an invalid ID (e.g. -1) if and only if this method
-     * returns false.<br>
+     * Returns whether or not the provided local slot ID is valid in this view. Generally, {@link #localToExternal(int)}
+     * should return an invalid ID (e.g. -1) if and only if this method returns false.<br>
      * This value should, when possible, be constant for each local slot ID.
      * @param localSlot the local slot ID to verify
      * @return true if the id is valid, and false if not
