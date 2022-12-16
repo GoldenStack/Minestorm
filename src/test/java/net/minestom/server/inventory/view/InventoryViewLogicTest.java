@@ -125,6 +125,22 @@ public class InventoryViewLogicTest {
         ));
     }
 
+    @Test
+    public void testChildForking() {
+        var view = InventoryView.contiguous(10, 20);
+
+        var contiguous = view.fork(3, 7);
+        assertSize(contiguous, 4);
+        assertSlotRange(contiguous, 0, 13, 4);
+
+        var singular = view.fork(6);
+        assertSize(singular, 1);
+
+        var arbitrary = view.fork(5, 7, 3);
+        assertSize(arbitrary, 3);
+        assertSlots(arbitrary, IntList.of(0, 1, 2), IntList.of(15, 17, 13));
+   }
+
     private static void assertSize(@NotNull InventoryView view, int size) {
         assertEquals(size, view.size());
         assertFailures(view, -1, size);
