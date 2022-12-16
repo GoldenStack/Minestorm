@@ -43,12 +43,6 @@ class InventoryViewImpl {
     //  (if Singular ever gets any actual side effects, this needs to be changed)
     record Joiner(@NotNull InventoryView parent, @NotNull InventoryView child) implements InventoryView.Singular {
 
-        Joiner {
-            if (child.size() > parent.size()) {
-                throw new IllegalArgumentException("Children cannot be larger than their parents!");
-            }
-        }
-
         @Override
         public int size() {
             return child.size();
@@ -72,14 +66,25 @@ class InventoryViewImpl {
         }
     }
 
-    record Union(@NotNull List<InventoryView> views, int size) implements InventoryView.Singular {
-
-        Union(@NotNull List<InventoryView> views) {
-            this(views, views.stream().mapToInt(InventoryView::size).sum());
-        }
+    record Union(@NotNull List<InventoryView> views) implements InventoryView.Singular {
 
         Union {
             views = List.copyOf(views);
+        }
+
+        @Override
+        public int size() {
+            return switch(views.size()) {
+                case 0 -> 0;
+                case 1 -> views.get(0).size();
+                default -> {
+                    int sum = 0;
+                    for (var view : views) {
+                        sum += view.size();
+                    }
+                    yield sum;
+                }
+            };
         }
 
         @Override
