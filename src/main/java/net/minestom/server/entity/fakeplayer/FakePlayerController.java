@@ -14,7 +14,6 @@ import net.minestom.server.network.packet.server.SendablePacket;
 import net.minestom.server.network.packet.server.ServerPacket;
 import net.minestom.server.network.packet.server.play.KeepAlivePacket;
 import net.minestom.server.network.packet.server.play.PlayerPositionAndLookPacket;
-import net.minestom.server.network.player.PlayerConnection;
 import net.minestom.server.utils.MathUtils;
 import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 import net.minestom.server.utils.validate.Check;
@@ -185,7 +184,7 @@ public class FakePlayerController {
     /**
      * Makes the player receives a packet
      * WARNING: pretty much unsafe, used internally to redirect packets here,
-     * you should instead use {@link PlayerConnection#sendPacket(SendablePacket)}
+     * you should instead use {@link Player#sendPacket(SendablePacket)}
      *
      * @param serverPacket the packet to consume
      */

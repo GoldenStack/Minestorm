@@ -11,7 +11,6 @@ import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.network.ConnectionManager;
 import net.minestom.server.network.player.FakePlayerConnection;
-import net.minestom.server.network.player.PlayerConnection;
 import net.minestom.server.utils.time.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -130,8 +129,8 @@ public class FakePlayer extends Player implements NavigableEntity {
 
     @Override
     public void updateNewViewer(@NotNull Player player) {
-        player.getPlayerConnection().sendPacket(getAddPlayerToList());
-        handleTabList(player.getPlayerConnection());
+        player.sendPacket(getAddPlayerToList());
+        handleTabList(player);
         super.updateNewViewer(player);
     }
 
@@ -139,9 +138,9 @@ public class FakePlayer extends Player implements NavigableEntity {
      * {@inheritDoc}
      */
     @Override
-    protected void showPlayer(@NotNull PlayerConnection connection) {
-        super.showPlayer(connection);
-        handleTabList(connection);
+    protected void showPlayer(@NotNull Player player) {
+        super.showPlayer(player);
+        handleTabList(player);
     }
 
     @NotNull
@@ -150,10 +149,10 @@ public class FakePlayer extends Player implements NavigableEntity {
         return navigator;
     }
 
-    private void handleTabList(PlayerConnection connection) {
+    private void handleTabList(Player player) {
         if (!option.isInTabList()) {
             // Remove from tab-list
-            MinecraftServer.getSchedulerManager().buildTask(() -> connection.sendPacket(getRemovePlayerToList())).delay(20, TimeUnit.SERVER_TICK).schedule();
+            MinecraftServer.getSchedulerManager().buildTask(() -> player.sendPacket(getRemovePlayerToList())).delay(20, TimeUnit.SERVER_TICK).schedule();
         }
     }
 }

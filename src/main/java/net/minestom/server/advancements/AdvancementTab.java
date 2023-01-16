@@ -3,7 +3,6 @@ package net.minestom.server.advancements;
 import net.minestom.server.Viewable;
 import net.minestom.server.entity.Player;
 import net.minestom.server.network.packet.server.play.AdvancementsPacket;
-import net.minestom.server.network.player.PlayerConnection;
 import net.minestom.server.utils.validate.Check;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -119,10 +118,7 @@ public class AdvancementTab implements Viewable {
             return false;
         }
 
-        final PlayerConnection playerConnection = player.getPlayerConnection();
-
-        // Send the tab to the player
-        playerConnection.sendPacket(createPacket());
+        player.sendPacket(createPacket());
 
         addPlayer(player);
 
@@ -135,11 +131,8 @@ public class AdvancementTab implements Viewable {
             return false;
         }
 
-        final PlayerConnection playerConnection = player.getPlayerConnection();
-
-        // Remove the tab
         if (!player.isRemoved()) {
-            playerConnection.sendPacket(removePacket);
+            player.sendPacket(removePacket);
         }
 
         removePlayer(player);

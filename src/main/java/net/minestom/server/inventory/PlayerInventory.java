@@ -110,7 +110,7 @@ public non-sealed class PlayerInventory extends AbstractInventory implements Equ
      */
     @Override
     public void update() {
-        this.player.getPlayerConnection().sendPacket(createWindowItemsPacket());
+        this.player.sendPacket(createWindowItemsPacket());
     }
 
     /**
@@ -133,7 +133,7 @@ public non-sealed class PlayerInventory extends AbstractInventory implements Equ
 
         if (!similar) {
             final SetSlotPacket setSlotPacket = SetSlotPacket.createCursorPacket(cursorItem);
-            player.getPlayerConnection().sendPacket(setSlotPacket);
+            player.sendPacket(setSlotPacket);
         }
     }
 
@@ -175,7 +175,7 @@ public non-sealed class PlayerInventory extends AbstractInventory implements Equ
      * @param itemStack the item stack in the slot
      */
     protected void sendSlotRefresh(short slot, ItemStack itemStack) {
-        player.getPlayerConnection().sendPacket(new SetSlotPacket((byte) 0, 0, slot, itemStack));
+        player.sendPacket(new SetSlotPacket((byte) 0, 0, slot, itemStack));
     }
 
     /**

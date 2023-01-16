@@ -45,7 +45,7 @@ public final class PlayerDiggingListener {
 
         // Acknowledge start/cancel/finish digging status
         if (diggingResult != null) {
-            player.getPlayerConnection().sendPacket(new AcknowledgePlayerDiggingPacket(blockPosition, diggingResult.block,
+            player.sendPacket(new AcknowledgePlayerDiggingPacket(blockPosition, diggingResult.block,
                     status, diggingResult.success));
         }
     }

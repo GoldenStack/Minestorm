@@ -80,7 +80,7 @@ public final class PacketUtils {
     @SuppressWarnings("OverrideOnly") // we need to access the audiences inside ForwardingAudience
     public static void sendPacket(@NotNull Audience audience, @NotNull ServerPacket packet) {
         if (audience instanceof Player) {
-            ((Player) audience).getPlayerConnection().sendPacket(packet);
+            ((Player) audience).sendPacket(packet);
         } else if (audience instanceof PacketGroupingAudience) {
             PacketUtils.sendGroupedPacket(((PacketGroupingAudience) audience).getPlayers(), packet);
         } else if (audience instanceof ForwardingAudience.Single) {

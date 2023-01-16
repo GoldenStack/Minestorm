@@ -34,7 +34,7 @@ public class Messenger {
      */
     public static boolean sendMessage(@NotNull Player player, @NotNull Component message, @NotNull ChatPosition position, @Nullable UUID uuid) {
         if (getChatMessageType(player).accepts(position)) {
-            player.getPlayerConnection().sendPacket(new ChatMessagePacket(message, position, uuid));
+            player.sendPacket(new ChatMessagePacket(message, position, uuid));
             return true;
         }
 
@@ -81,7 +81,7 @@ public class Messenger {
      * @param player the player
      */
     public static void sendRejectionMessage(@NotNull Player player) {
-        player.getPlayerConnection().sendPacket(CANNOT_SEND_PACKET);
+        player.sendPacket(CANNOT_SEND_PACKET);
     }
 
     /**

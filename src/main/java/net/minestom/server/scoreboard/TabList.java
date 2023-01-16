@@ -3,7 +3,6 @@ package net.minestom.server.scoreboard;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.entity.Player;
 import net.minestom.server.network.packet.server.play.ScoreboardObjectivePacket;
-import net.minestom.server.network.player.PlayerConnection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -53,11 +52,10 @@ public class TabList implements Scoreboard {
     @Override
     public boolean addViewer(@NotNull Player player) {
         boolean result = this.viewers.add(player);
-        PlayerConnection connection = player.getPlayerConnection();
 
         if (result) {
-            connection.sendPacket(this.getCreationObjectivePacket(Component.empty(), this.type));
-            connection.sendPacket(this.getDisplayScoreboardPacket((byte) 0));
+            player.sendPacket(this.getCreationObjectivePacket(Component.empty(), this.type));
+            player.sendPacket(this.getDisplayScoreboardPacket((byte) 0));
         }
 
         return result;
@@ -66,10 +64,9 @@ public class TabList implements Scoreboard {
     @Override
     public boolean removeViewer(@NotNull Player player) {
         boolean result = this.viewers.remove(player);
-        PlayerConnection connection = player.getPlayerConnection();
 
         if (result) {
-            connection.sendPacket(this.getDestructionObjectivePacket());
+            player.sendPacket(this.getDestructionObjectivePacket());
         }
 
         return result;
