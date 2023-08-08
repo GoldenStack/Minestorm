@@ -11,7 +11,6 @@ import net.minestom.server.inventory.click.ClickType;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.client.play.ClientClickWindowPacket;
-import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -181,10 +180,8 @@ public class RightClickIntegrationTest {
             assert openInventory != null;
             // Do not touch slot
         } else {
-            int offset = openInventory != null ? openInventory.getInnerSize() : 0;
-            slot = PlayerInventoryUtils.convertToPacketSlot(slot);
             if (openInventory != null) {
-                slot = slot - 9 + offset;
+                slot += openInventory.getInnerSize();
             }
         }
         player.addPacketToQueue(new ClientClickWindowPacket(windowId, 0, (short) slot, (byte) 1,
