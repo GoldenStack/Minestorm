@@ -9,7 +9,6 @@ import net.minestom.server.network.packet.client.play.ClientClickWindowPacket;
 import net.minestom.server.network.packet.client.play.ClientCloseWindowPacket;
 import net.minestom.server.network.packet.client.play.ClientPongPacket;
 import net.minestom.server.network.packet.server.play.PingPacket;
-import net.minestom.server.network.packet.server.play.SetSlotPacket;
 
 public class WindowListener {
 
@@ -71,7 +70,7 @@ public class WindowListener {
         }
 
         // Prevent the player from picking a ghost item in cursor
-        refreshCursorItem(player, inventory);
+        inventory.refreshCursor(player, inventory.getCursorItem(player));
 
         // (Why is the ping packet necessary?)
         player.sendPacket(new PingPacket((1 << 30) | (windowId << 16)));
@@ -91,14 +90,6 @@ public class WindowListener {
         Inventory newInventory = inventoryCloseEvent.getNewInventory();
         if (newInventory != null)
             player.openInventory(newInventory);
-    }
-
-    /**
-     * @param player    the player to refresh the cursor item
-     * @param inventory the player open inventory, null if not any (could be player inventory)
-     */
-    private static void refreshCursorItem(Player player, AbstractInventory inventory) {
-        player.sendPacket(SetSlotPacket.createCursorPacket(inventory.getCursorItem(player)));
     }
 
 }
