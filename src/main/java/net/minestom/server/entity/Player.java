@@ -1727,7 +1727,9 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
         var closedInventory = getOpenInventory();
         if (closedInventory != null) {
             if (closedInventory.removeViewer(this)) {
-                this.openInventory = null;
+                if (closedInventory == getOpenInventory()) {
+                    this.openInventory = null;
+                }
                 return true;
             }
         } else {
