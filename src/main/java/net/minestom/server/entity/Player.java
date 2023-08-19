@@ -38,7 +38,7 @@ import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Chunk;
 import net.minestom.server.instance.EntityTracker;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.inventory.AbstractInventory;
+import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.PlayerInventory;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -158,7 +158,7 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
     private int level;
 
     protected PlayerInventory inventory;
-    private AbstractInventory openInventory;
+    private Inventory openInventory;
     // Used internally to allow the closing of inventory within the inventory listener
     private boolean didCloseInventory;
 
@@ -517,7 +517,7 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
         EventDispatcher.call(new PlayerDisconnectEvent(this));
         super.remove();
         this.packets.clear();
-        final AbstractInventory currentInventory = getOpenInventory();
+        final Inventory currentInventory = getOpenInventory();
         if (currentInventory != null) currentInventory.removeViewer(this);
         MinecraftServer.getBossBarManager().removeAllBossBars(this);
         // Advancement tabs cache
@@ -1444,7 +1444,7 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
      *
      * @return the currently open inventory, null if there is not (player inventory is not detected)
      */
-    public @Nullable AbstractInventory getOpenInventory() {
+    public @Nullable Inventory getOpenInventory() {
         return openInventory;
     }
 
@@ -1472,13 +1472,13 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
      * @param inventory the inventory to open
      * @return true if the inventory has been opened/sent to the player, false otherwise (cancelled by event)
      */
-    public boolean openInventory(@NotNull AbstractInventory inventory) {
+    public boolean openInventory(@NotNull Inventory inventory) {
         InventoryOpenEvent inventoryOpenEvent = new InventoryOpenEvent(inventory, this);
 
         EventDispatcher.callCancellable(inventoryOpenEvent, () -> {
             tryCloseInventory();
 
-            AbstractInventory newInventory = inventoryOpenEvent.getInventory();
+            Inventory newInventory = inventoryOpenEvent.getInventory();
             if (newInventory.addViewer(this)) {
                 this.openInventory = newInventory;
             }
