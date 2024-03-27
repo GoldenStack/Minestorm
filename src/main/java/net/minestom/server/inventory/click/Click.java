@@ -3,12 +3,12 @@ package net.minestom.server.inventory.click;
 import it.unimi.dsi.fastutil.ints.*;
 import net.minestom.server.entity.Player;
 import net.minestom.server.inventory.Inventory;
-import net.minestom.server.inventory.PlayerInventory;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 
 public class Click {
@@ -28,9 +28,9 @@ public class Click {
 
         record Double(int slot) implements Info {}
 
-        record LeftDrag(@NotNull IntList slots) implements Info {}
-        record RightDrag(@NotNull IntList slots) implements Info {}
-        record MiddleDrag(@NotNull IntList slots) implements Info {} // Creative only
+        record LeftDrag(List<Integer> slots) implements Info {}
+        record RightDrag(List<Integer> slots) implements Info {}
+        record MiddleDrag(List<Integer> slots) implements Info {} // Creative only
 
         record LeftDropCursor() implements Info {}
         record RightDropCursor() implements Info {}
@@ -48,49 +48,54 @@ public class Click {
 
     /**
      * Stores changes that occurred or will occur as the result of a click.
-     * @param player the player who clicked in the inventory
-     * @param clickedInventory the clicked inventory. This may be the player's inventory
      * @param changes the map of changes that will occur to the inventory
      * @param playerInventoryChanges the map of changes that will occur to the player inventory
      * @param newCursorItem the player's cursor item after this click. Null indicates no change
      * @param sideEffects the side effects of this click
      */
-    public record Result(@NotNull Player player, @NotNull Inventory clickedInventory,
-                         @NotNull Map<Integer, ItemStack> changes, @NotNull Map<Integer, ItemStack> playerInventoryChanges,
+    public record Result(@NotNull Map<Integer, ItemStack> changes, @NotNull Map<Integer, ItemStack> playerInventoryChanges,
                          @Nullable ItemStack newCursorItem, @Nullable Click.Result.SideEffects sideEffects) {
 
-        public static @NotNull Click.Result.Builder builder(@NotNull Player player, @NotNull Inventory clickedInventory) {
-            return new Builder(player, clickedInventory);
+        public Result {
+            changes = Map.copyOf(changes);
+            playerInventoryChanges = Map.copyOf(playerInventoryChanges);
+        }
+
+        public static @NotNull Click.Result.Builder builder(@NotNull Inventory clickedInventory, @NotNull Player player) {
+            return builder(clickedInventory, player.getInventory(), player.getInventory().getCursorItem());
+        }
+
+        public static @NotNull Click.Result.Builder builder(@NotNull Inventory clickedInventory, @NotNull Inventory playerInventory, @NotNull ItemStack cursor) {
+            return new Builder(clickedInventory, playerInventory, cursor);
         }
 
         public static final class Builder implements Int2ObjectFunction<ItemStack> {
-            private final @NotNull Player player;
             private final @NotNull Inventory clickedInventory;
+            private final @NotNull Inventory playerInventory;
+            private final @NotNull ItemStack cursorItem;
 
             private final Int2ObjectMap<ItemStack> changes = new Int2ObjectArrayMap<>();
             private final Int2ObjectMap<ItemStack> playerInventoryChanges = new Int2ObjectArrayMap<>();
             private @Nullable ItemStack newCursorItem;
+
             private @Nullable Click.Result.SideEffects sideEffects;
 
-            Builder(@NotNull Player player, @NotNull Inventory clickedInventory) {
-                this.player = player;
+            Builder(@NotNull Inventory clickedInventory, @NotNull Inventory playerInventory, @NotNull ItemStack cursor) {
                 this.clickedInventory = clickedInventory;
-            }
-
-            public @NotNull Player player() {
-                return player;
+                this.playerInventory = playerInventory;
+                this.cursorItem = cursor;
             }
 
             public @NotNull Inventory clickedInventory() {
                 return clickedInventory;
             }
 
-            public @NotNull PlayerInventory playerInventory() {
-                return player().getInventory();
+            public @NotNull Inventory playerInventory() {
+                return playerInventory;
             }
 
             public @NotNull ItemStack getCursorItem() {
-                return player().getInventory().getCursorItem();
+                return cursorItem;
             }
 
             @Override
@@ -139,9 +144,7 @@ public class Click {
 
             public @NotNull Click.Result build() {
                 return new Result(
-                        player, clickedInventory,
-                        Int2ObjectMaps.unmodifiable(new Int2ObjectArrayMap<>(changes)),
-                        Int2ObjectMaps.unmodifiable(new Int2ObjectArrayMap<>(playerInventoryChanges)),
+                        changes, playerInventoryChanges,
                         newCursorItem, sideEffects
                 );
             }

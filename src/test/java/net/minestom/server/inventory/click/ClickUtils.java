@@ -51,18 +51,18 @@ public class ClickUtils {
         var player = createPlayer();
         var inventory = createInventory();
 
-        initialChanges.apply(Click.Result.builder(player, inventory)).build().applyChanges(player, inventory);
+        initialChanges.apply(Click.Result.builder(inventory, player)).build().applyChanges(player, inventory);
         var changes = inventory.handleClick(player, info);
-        assertEquals(expectedChanges.apply(Click.Result.builder(player, inventory)).build(), changes);
+        assertEquals(expectedChanges.apply(Click.Result.builder(inventory, player)).build(), changes);
     }
 
     public static void assertPlayerClick(@NotNull UnaryOperator<Click.Result.Builder> initialChanges, @NotNull Click.Info info, @NotNull UnaryOperator<Click.Result.Builder> expectedChanges) {
         var player = createPlayer();
         var inventory = player.getInventory();
 
-        initialChanges.apply(Click.Result.builder(player, inventory)).build().applyChanges(player, inventory);
+        initialChanges.apply(Click.Result.builder(inventory, player)).build().applyChanges(player, inventory);
         var changes = inventory.handleClick(player, info);
-        assertEquals(expectedChanges.apply(Click.Result.builder(player, inventory)).build(), changes);
+        assertEquals(expectedChanges.apply(Click.Result.builder(inventory, player)).build(), changes);
     }
 
     public static void assertProcessed(@NotNull ClickPreprocessor preprocessor, @NotNull Player player, @Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {

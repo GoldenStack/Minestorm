@@ -32,7 +32,7 @@ public interface ClickHandler {
         Click.Info newInfo = preClickEvent.getClickInfo();
 
         if (!preClickEvent.isCancelled()) {
-            Click.Result changes = handle(newInfo, Click.Result.builder(player, inventory)).build();
+            Click.Result changes = handle(newInfo, Click.Result.builder(inventory, player));
 
             InventoryClickEvent clickEvent = new InventoryClickEvent(player.getInventory(), inventory, player, newInfo, changes);
             EventDispatcher.call(clickEvent);
@@ -68,78 +68,78 @@ public interface ClickHandler {
      * @param builder the click result builder for this click
      * @return the changes that were calculated
      */
-    default @NotNull Click.Result.Builder handle(@NotNull Click.Info info, @NotNull Click.Result.Builder builder) {
+    default @NotNull Click.Result handle(@NotNull Click.Info info, @NotNull Click.Result.Builder builder) {
         if (info instanceof Click.Info.Left left) {
-            left(left, builder);
+            return left(left, builder);
         } else if (info instanceof Click.Info.Right right) {
-            right(right, builder);
+            return right(right, builder);
         } else if (info instanceof Click.Info.Middle middle) {
-            middle(middle, builder);
+            return middle(middle, builder);
         } else if (info instanceof Click.Info.LeftShift leftShift) {
-            leftShift(leftShift, builder);
+            return leftShift(leftShift, builder);
         } else if (info instanceof Click.Info.RightShift rightShift) {
-            rightShift(rightShift, builder);
+            return rightShift(rightShift, builder);
         } else if (info instanceof Click.Info.Double doubleClick) {
-            doubleClick(doubleClick, builder);
+            return doubleClick(doubleClick, builder);
         } else if (info instanceof Click.Info.LeftDrag drag) {
-            leftDrag(drag, builder);
+            return leftDrag(drag, builder);
         } else if (info instanceof Click.Info.MiddleDrag drag) {
-            middleDrag(drag, builder);
+            return middleDrag(drag, builder);
         } else if (info instanceof Click.Info.RightDrag drag) {
-            rightDrag(drag, builder);
+            return rightDrag(drag, builder);
         } else if (info instanceof Click.Info.DropSlot drop) {
-            dropSlot(drop, builder);
+            return dropSlot(drop, builder);
         } else if (info instanceof Click.Info.LeftDropCursor drop) {
-            leftDropCursor(drop, builder);
+            return leftDropCursor(drop, builder);
         } else if (info instanceof Click.Info.MiddleDropCursor drop) {
-            middleDropCursor(drop, builder);
+            return middleDropCursor(drop, builder);
         } else if (info instanceof Click.Info.RightDropCursor drop) {
-            rightDropCursor(drop, builder);
+            return rightDropCursor(drop, builder);
         } else if (info instanceof Click.Info.HotbarSwap swap) {
-            hotbarSwap(swap, builder);
+            return hotbarSwap(swap, builder);
         } else if (info instanceof Click.Info.OffhandSwap swap) {
-            offhandSwap(swap, builder);
+            return offhandSwap(swap, builder);
         } else if (info instanceof Click.Info.CreativeSetItem set) {
-            creativeSetItem(set, builder);
+            return creativeSetItem(set, builder);
         } else if (info instanceof Click.Info.CreativeDropItem drop) {
-            creativeDropItem(drop, builder);
+            return creativeDropItem(drop, builder);
+        } else {
+            throw new IllegalArgumentException("Unknown click info " + info);
         }
-
-        return builder;
     }
 
-    void left(@NotNull Click.Info.Left info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result left(@NotNull Click.Info.Left info, @NotNull Click.Result.Builder builder);
 
-    void right(@NotNull Click.Info.Right info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result right(@NotNull Click.Info.Right info, @NotNull Click.Result.Builder builder);
 
-    void middle(@NotNull Click.Info.Middle info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result middle(@NotNull Click.Info.Middle info, @NotNull Click.Result.Builder builder);
 
-    void leftShift(@NotNull Click.Info.LeftShift info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result leftShift(@NotNull Click.Info.LeftShift info, @NotNull Click.Result.Builder builder);
 
-    void rightShift(@NotNull Click.Info.RightShift info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result rightShift(@NotNull Click.Info.RightShift info, @NotNull Click.Result.Builder builder);
 
-    void doubleClick(@NotNull Click.Info.Double info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result doubleClick(@NotNull Click.Info.Double info, @NotNull Click.Result.Builder builder);
 
-    void leftDropCursor(@NotNull Click.Info.LeftDropCursor info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result leftDropCursor(@NotNull Click.Info.LeftDropCursor info, @NotNull Click.Result.Builder builder);
 
-    void middleDropCursor(@NotNull Click.Info.MiddleDropCursor info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result middleDropCursor(@NotNull Click.Info.MiddleDropCursor info, @NotNull Click.Result.Builder builder);
 
-    void rightDropCursor(@NotNull Click.Info.RightDropCursor info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result rightDropCursor(@NotNull Click.Info.RightDropCursor info, @NotNull Click.Result.Builder builder);
 
-    void leftDrag(@NotNull Click.Info.LeftDrag info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result leftDrag(@NotNull Click.Info.LeftDrag info, @NotNull Click.Result.Builder builder);
 
-    void middleDrag(@NotNull Click.Info.MiddleDrag info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result middleDrag(@NotNull Click.Info.MiddleDrag info, @NotNull Click.Result.Builder builder);
 
-    void rightDrag(@NotNull Click.Info.RightDrag info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result rightDrag(@NotNull Click.Info.RightDrag info, @NotNull Click.Result.Builder builder);
 
-    void dropSlot(@NotNull Click.Info.DropSlot info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result dropSlot(@NotNull Click.Info.DropSlot info, @NotNull Click.Result.Builder builder);
 
-    void hotbarSwap(@NotNull Click.Info.HotbarSwap info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result hotbarSwap(@NotNull Click.Info.HotbarSwap info, @NotNull Click.Result.Builder builder);
 
-    void offhandSwap(@NotNull Click.Info.OffhandSwap info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result offhandSwap(@NotNull Click.Info.OffhandSwap info, @NotNull Click.Result.Builder builder);
 
-    void creativeSetItem(@NotNull Click.Info.CreativeSetItem info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result creativeSetItem(@NotNull Click.Info.CreativeSetItem info, @NotNull Click.Result.Builder builder);
 
-    void creativeDropItem(@NotNull Click.Info.CreativeDropItem info, @NotNull Click.Result.Builder builder);
+    @NotNull Click.Result creativeDropItem(@NotNull Click.Info.CreativeDropItem info, @NotNull Click.Result.Builder builder);
 
 }

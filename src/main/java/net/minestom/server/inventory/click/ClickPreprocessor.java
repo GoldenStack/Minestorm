@@ -1,8 +1,5 @@
 package net.minestom.server.inventory.click;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntLists;
 import net.minestom.server.entity.Player;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.PlayerInventory;
@@ -11,6 +8,8 @@ import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
@@ -22,9 +21,9 @@ public final class ClickPreprocessor {
 
     private final @NotNull Inventory inventory;
 
-    private final Map<Player, IntList> leftDraggingMap = new ConcurrentHashMap<>();
-    private final Map<Player, IntList> rightDraggingMap = new ConcurrentHashMap<>();
-    private final Map<Player, IntList> creativeDragMap = new ConcurrentHashMap<>();
+    private final Map<Player, List<Integer>> leftDraggingMap = new ConcurrentHashMap<>();
+    private final Map<Player, List<Integer>> rightDraggingMap = new ConcurrentHashMap<>();
+    private final Map<Player, List<Integer>> creativeDragMap = new ConcurrentHashMap<>();
 
     public ClickPreprocessor(@NotNull Inventory inventory) {
         this.inventory = inventory;
@@ -96,18 +95,18 @@ public final class ClickPreprocessor {
                 // Handle drag finishes
                 if (button == 2) {
                     var list = leftDraggingMap.remove(player);
-                    yield new Click.Info.LeftDrag(list != null ? list : IntLists.emptyList());
+                    yield new Click.Info.LeftDrag(list == null ? List.of() : List.copyOf(list));
                 } else if (button == 6) {
                     var list = rightDraggingMap.remove(player);
-                    yield new Click.Info.RightDrag(list != null ? list : IntLists.emptyList());
+                    yield new Click.Info.RightDrag(list == null ? List.of() : List.copyOf(list));
                 } else if (button == 10) {
                     var list = creativeDragMap.remove(player);
-                    yield new Click.Info.MiddleDrag(list != null ? list : IntLists.emptyList());
+                    yield new Click.Info.MiddleDrag(list == null ? List.of() : List.copyOf(list));
                 }
 
                 // Handle intermediate state
-                BiFunction<Player, IntList, IntList> addItem = (k, v) -> {
-                    var v2 = v != null ? v : new IntArrayList();
+                BiFunction<Player, List<Integer>, List<Integer>> addItem = (k, v) -> {
+                    List<Integer> v2 = v != null ? v : new ArrayList<>();
                     if (validate(slot)) {
                         if (!v2.contains(slot)) {
                             v2.add(slot);
