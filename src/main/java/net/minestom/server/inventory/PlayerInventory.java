@@ -62,11 +62,11 @@ public non-sealed class PlayerInventory extends InventoryImpl {
             ))
     );
 
-    public static @NotNull IntList getInnerShiftClickSlots(@NotNull ClickResult.Builder builder, @NotNull ItemStack item, int slot) {
+    public static @NotNull IntList getInnerShiftClickSlots(@NotNull Click.Result.Builder builder, @NotNull ItemStack item, int slot) {
         return IntIterators.pour(IntIterators.fromTo(builder.clickedInventory().getSize(), builder.clickedInventory().getSize() + 36));
     }
 
-    public static @NotNull IntList getInnerDoubleClickSlots(@NotNull ClickResult.Builder builder, @NotNull ItemStack item, int slot) {
+    public static @NotNull IntList getInnerDoubleClickSlots(@NotNull Click.Result.Builder builder, @NotNull ItemStack item, int slot) {
         return IntIterators.pour(IntIterators.fromTo(builder.clickedInventory().getSize(), builder.clickedInventory().getSize() + 36));
     }
 
@@ -208,7 +208,7 @@ public non-sealed class PlayerInventory extends InventoryImpl {
     }
 
     @Override
-    public @Nullable ClickResult handleClick(@NotNull Player player, @NotNull Click.Info info) {
+    public @Nullable Click.Result handleClick(@NotNull Player player, @NotNull Click.Info info) {
         return CLICK_HANDLER.handleClick(this, player, info);
     }
 

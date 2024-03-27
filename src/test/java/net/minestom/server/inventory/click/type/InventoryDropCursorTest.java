@@ -2,7 +2,6 @@ package net.minestom.server.inventory.click.type;
 
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.inventory.click.Click;
-import net.minestom.server.inventory.click.ClickResult;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ public class InventoryDropCursorTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.LeftDropCursor(),
-                builder -> builder.cursor(ItemStack.AIR).sideEffects(new ClickResult.SideEffects.DropFromPlayer(ItemStack.of(Material.STONE, 32)))
+                builder -> builder.cursor(ItemStack.AIR).sideEffects(new Click.Result.SideEffects.DropFromPlayer(ItemStack.of(Material.STONE, 32)))
         );
     }
 
@@ -36,7 +35,7 @@ public class InventoryDropCursorTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.RightDropCursor(),
-                builder -> builder.cursor(ItemStack.of(Material.STONE, 31)).sideEffects(new ClickResult.SideEffects.DropFromPlayer(ItemStack.of(Material.STONE, 1)))
+                builder -> builder.cursor(ItemStack.of(Material.STONE, 31)).sideEffects(new Click.Result.SideEffects.DropFromPlayer(ItemStack.of(Material.STONE, 1)))
         );
     }
 

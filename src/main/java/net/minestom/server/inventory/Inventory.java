@@ -4,7 +4,6 @@ import net.minestom.server.Viewable;
 import net.minestom.server.entity.Player;
 import net.minestom.server.inventory.click.Click;
 import net.minestom.server.inventory.click.ClickPreprocessor;
-import net.minestom.server.inventory.click.ClickResult;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Taggable;
 import org.jetbrains.annotations.ApiStatus;
@@ -56,7 +55,7 @@ public sealed interface Inventory extends Taggable, Viewable permits InventoryIm
      * @param info the information about the player's click
      * @return the results of the click, or null if the click was cancelled or otherwise was not handled
      */
-    @Nullable ClickResult handleClick(@NotNull Player player, @NotNull Click.Info info);
+    @Nullable Click.Result handleClick(@NotNull Player player, @NotNull Click.Info info);
 
     /**
      * Gets the click preprocessor for this inventory.

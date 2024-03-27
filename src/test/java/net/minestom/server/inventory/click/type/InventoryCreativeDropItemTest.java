@@ -2,7 +2,6 @@ package net.minestom.server.inventory.click.type;
 
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.inventory.click.Click;
-import net.minestom.server.inventory.click.ClickResult;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.junit.jupiter.api.Test;
@@ -20,14 +19,14 @@ public class InventoryCreativeDropItemTest {
         assertClick(
                 builder -> builder,
                 new Click.Info.CreativeDropItem(ItemStack.of(Material.DIRT, 64)),
-                builder -> builder.sideEffects(new ClickResult.SideEffects.DropFromPlayer(ItemStack.of(Material.DIRT, 64)))
+                builder -> builder.sideEffects(new Click.Result.SideEffects.DropFromPlayer(ItemStack.of(Material.DIRT, 64)))
         );
 
         // Make sure it doesn't drop a full stack
         assertClick(
                 builder -> builder,
                 new Click.Info.CreativeDropItem(ItemStack.of(Material.DIRT, 1)),
-                builder -> builder.sideEffects(new ClickResult.SideEffects.DropFromPlayer(ItemStack.of(Material.DIRT, 1)))
+                builder -> builder.sideEffects(new Click.Result.SideEffects.DropFromPlayer(ItemStack.of(Material.DIRT, 1)))
         );
     }
 

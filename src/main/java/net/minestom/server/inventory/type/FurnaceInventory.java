@@ -50,7 +50,7 @@ public class FurnaceInventory extends ContainerInventory {
     }
 
     @Override
-    public @Nullable ClickResult handleClick(@NotNull Player player, @NotNull Click.Info info) {
+    public @Nullable Click.Result handleClick(@NotNull Player player, @NotNull Click.Info info) {
         return FURNACE_HANDLER.handleClick(this, player, info);
     }
 

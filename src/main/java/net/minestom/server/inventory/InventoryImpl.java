@@ -126,7 +126,7 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
     }
 
     @Override
-    public @Nullable ClickResult handleClick(@NotNull Player player, @NotNull Click.Info info) {
+    public @Nullable Click.Result handleClick(@NotNull Player player, @NotNull Click.Info info) {
         return DEFAULT_HANDLER.handleClick(this, player, info);
     }
 
