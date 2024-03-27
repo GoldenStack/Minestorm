@@ -97,30 +97,30 @@ public final class PlayerInventoryUtils {
      * Converts the given slot into a protocol ID directly after the provided inventory.
      * This is intended for when a player's inner inventory is interacted with while a player has another inventory
      * open.<br>
-     * This is the inverse of {@link #protocolToMinestom(int, Inventory)}.
+     * This is the inverse of {@link #protocolToMinestom(int, int)}.
      *
      * @param slot the player slot that was interacted with
-     * @param openInventory the inventory opened by the player (not the player's inventory)
+     * @param openInventorySize the size of the inventory opened by the player (not the player's inventory)
      * @return the protocol slot ID
      */
-    public static int minestomToProtocol(int slot, @NotNull Inventory openInventory) {
-        return PlayerInventoryUtils.minestomToProtocol(slot) + openInventory.getSize() - PROTOCOL_OFFSET;
+    public static int minestomToProtocol(int slot, int openInventorySize) {
+        return PlayerInventoryUtils.minestomToProtocol(slot) + openInventorySize - PROTOCOL_OFFSET;
     }
 
     /**
      * Converts the given protocol ID that is directly after the provided inventory's slots into a player inventory slot
      * ID. This is intended for when a player's inner inventory is interacted with while a player has another inventory
      * open.<br>
-     * This is the inverse of {@link #minestomToProtocol(int, Inventory)}.
+     * This is the inverse of {@link #minestomToProtocol(int, int)}.
      *
      * @param slot the protocol slot ID, situated directly after the slot IDs for the open inventory
-     * @param openInventory the inventory opened by the player (not the player's inventory)
+     * @param openInventorySize the size of the inventory opened by the player (not the player's inventory)
      * @return the player slot ID
      */
-    public static int protocolToMinestom(int slot, @NotNull Inventory openInventory) {
-        if (slot < openInventory.getSize()) return -1;
+    public static int protocolToMinestom(int slot, int openInventorySize) {
+        if (slot < openInventorySize) return -1;
 
-        return PlayerInventoryUtils.protocolToMinestom(slot - openInventory.getSize() + PROTOCOL_OFFSET);
+        return PlayerInventoryUtils.protocolToMinestom(slot - openInventorySize + PROTOCOL_OFFSET);
     }
 
 }

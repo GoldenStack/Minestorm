@@ -101,7 +101,7 @@ public class Click {
             @Override
             public @NotNull ItemStack get(int slot) {
                 if (slot >= clickedInventory.getSize()) {
-                    int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory);
+                    int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory.getSize());
 
                     return playerInventoryChanges.containsKey(converted) ?
                             playerInventoryChanges.get(converted) : playerInventory().getItemStack(converted);
@@ -120,7 +120,7 @@ public class Click {
 
             public @NotNull Click.Result.Builder change(int slot, @NotNull ItemStack item) {
                 if (slot >= clickedInventory.getSize()) {
-                    change(PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory), item, true);
+                    change(PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory.getSize()), item, true);
                 } else {
                     change(slot, item, false);
                 }
