@@ -8,6 +8,7 @@ import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -74,8 +75,8 @@ public class Click {
             private final @NotNull Inventory playerInventory;
             private final @NotNull ItemStack cursorItem;
 
-            private final Int2ObjectMap<ItemStack> changes = new Int2ObjectArrayMap<>();
-            private final Int2ObjectMap<ItemStack> playerInventoryChanges = new Int2ObjectArrayMap<>();
+            private final Map<Integer, ItemStack> changes = new HashMap<>();
+            private final Map<Integer, ItemStack> playerInventoryChanges = new HashMap<>();
             private @Nullable ItemStack newCursorItem;
 
             private @Nullable Click.Result.SideEffects sideEffects;
@@ -90,21 +91,24 @@ public class Click {
                 return clickedInventory;
             }
 
-            public @NotNull Inventory playerInventory() {
-                return playerInventory;
-            }
-
             public @NotNull ItemStack getCursorItem() {
-                return cursorItem;
+                return newCursorItem == null ? cursorItem : newCursorItem;
             }
 
             @Override
             public @NotNull ItemStack get(int slot) {
                 if (slot >= clickedInventory.getSize()) {
                     int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory.getSize());
+                    return get(converted, true);
+                } else {
+                    return get(slot, false);
+                }
+            }
 
-                    return playerInventoryChanges.containsKey(converted) ?
-                            playerInventoryChanges.get(converted) : playerInventory().getItemStack(converted);
+            public @NotNull ItemStack get(int slot, boolean playerInventory) {
+                if (playerInventory) {
+                    return playerInventoryChanges.containsKey(slot) ?
+                            playerInventoryChanges.get(slot) : this.playerInventory.getItemStack(slot);
                 } else {
                     return changes.containsKey(slot) ?
                             changes.get(slot) : clickedInventory.getItemStack(slot);

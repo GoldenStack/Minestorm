@@ -230,7 +230,7 @@ public class StandardClickHandler implements ClickHandler {
 
     @Override
     public @NotNull Click.Result hotbarSwap(@NotNull Click.Info.HotbarSwap info, @NotNull Click.Result.Builder builder) {
-        var hotbarItem = builder.playerInventory().getItemStack(info.hotbarSlot());
+        var hotbarItem = builder.get(info.hotbarSlot(), true);
         var selectedItem = builder.get(info.clickedSlot());
 
         if (!hotbarItem.isAir() || !selectedItem.isAir()) {
@@ -244,7 +244,7 @@ public class StandardClickHandler implements ClickHandler {
 
     @Override
     public @NotNull Click.Result offhandSwap(@NotNull Click.Info.OffhandSwap info, @NotNull Click.Result.Builder builder) {
-        var offhandItem = builder.playerInventory().getItemStack(PlayerInventoryUtils.OFF_HAND_SLOT);
+        var offhandItem = builder.get(PlayerInventoryUtils.OFF_HAND_SLOT, true);
         var selectedItem = builder.get(info.slot());
 
         if (!offhandItem.isAir() || !selectedItem.isAir()) {

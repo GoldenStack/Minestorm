@@ -155,7 +155,7 @@ public non-sealed class PlayerInventory extends InventoryImpl {
         for (Player player : getViewers()) {
             Inventory open = player.getOpenInventory();
             if (open != null && slot >= 0 && slot < INNER_SIZE) {
-                player.sendPacket(new SetSlotPacket(open.getWindowId(), 0, (short) PlayerInventoryUtils.minestomToProtocol(slot, open), itemStack));
+                player.sendPacket(new SetSlotPacket(open.getWindowId(), 0, (short) PlayerInventoryUtils.minestomToProtocol(slot, open.getSize()), itemStack));
             } else if (open == null || slot == OFF_HAND_SLOT) {
                 player.sendPacket(defaultPacket);
             }

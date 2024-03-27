@@ -174,7 +174,7 @@ public class InventoryIntegrationTest {
         player.getInventory().setItemStack(0, MAGIC_STACK); // Test with first inner inventory slot
         packetTracker.assertSingle(slot -> {
             assertEquals(inventory.getWindowId(), slot.windowId());
-            assertEquals(PlayerInventoryUtils.minestomToProtocol(0, inventory), slot.slot());
+            assertEquals(PlayerInventoryUtils.minestomToProtocol(0, inventory.getSize()), slot.slot());
             assertEquals(MAGIC_STACK, slot.itemStack());
         });
 
@@ -182,7 +182,7 @@ public class InventoryIntegrationTest {
         player.getInventory().setItemStack(35, MAGIC_STACK); // Test with last inner inventory slot
         packetTracker.assertSingle(slot -> {
             assertEquals(inventory.getWindowId(), slot.windowId());
-            assertEquals(PlayerInventoryUtils.minestomToProtocol(35, inventory), slot.slot());
+            assertEquals(PlayerInventoryUtils.minestomToProtocol(35, inventory.getSize()), slot.slot());
             assertEquals(MAGIC_STACK, slot.itemStack());
         });
     }

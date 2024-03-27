@@ -54,7 +54,7 @@ public final class ClickPreprocessor {
 
         return switch (clickType) {
             case PICKUP -> {
-                if (packet.slot() == -999) {
+                if (originalSlot == -999) {
                     yield switch (button) {
                         case 0 -> new Click.Info.LeftDropCursor();
                         case 1 -> new Click.Info.RightDropCursor();
