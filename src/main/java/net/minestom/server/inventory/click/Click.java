@@ -87,8 +87,8 @@ public class Click {
                 this.cursorItem = cursor;
             }
 
-            public @NotNull Inventory clickedInventory() {
-                return clickedInventory;
+            public int clickedSize() {
+                return clickedInventory.getSize();
             }
 
             public @NotNull ItemStack getCursorItem() {
@@ -97,42 +97,39 @@ public class Click {
 
             @Override
             public @NotNull ItemStack get(int slot) {
-                if (slot >= clickedInventory.getSize()) {
+                if (slot >= clickedSize()) {
                     int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory.getSize());
-                    return get(converted, true);
-                } else {
-                    return get(slot, false);
-                }
-            }
-
-            public @NotNull ItemStack get(int slot, boolean playerInventory) {
-                if (playerInventory) {
-                    return playerInventoryChanges.containsKey(slot) ?
-                            playerInventoryChanges.get(slot) : this.playerInventory.getItemStack(slot);
+                    return getPlayer(converted);
                 } else {
                     return changes.containsKey(slot) ?
                             changes.get(slot) : clickedInventory.getItemStack(slot);
                 }
             }
 
+            public @NotNull ItemStack getPlayer(int slot) {
+                return playerInventoryChanges.containsKey(slot) ?
+                        playerInventoryChanges.get(slot) : this.playerInventory.getItemStack(slot);
+            }
+
             @Override
             public ItemStack put(int key, ItemStack value) {
                 ItemStack get = get(key);
-                change(key, value);
+                set(key, value);
                 return get;
             }
 
-            public @NotNull Click.Result.Builder change(int slot, @NotNull ItemStack item) {
+            public @NotNull Click.Result.Builder set(int slot, @NotNull ItemStack item) {
                 if (slot >= clickedInventory.getSize()) {
-                    change(PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory.getSize()), item, true);
+                    int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory.getSize());
+                    return setPlayer(converted, item);
                 } else {
-                    change(slot, item, false);
+                    changes.put(slot, item);
+                    return this;
                 }
-                return this;
             }
 
-            public @NotNull Click.Result.Builder change(int slot, @NotNull ItemStack item, boolean playerInventory) {
-                (playerInventory ? playerInventoryChanges : changes).put(slot, item);
+            public @NotNull Click.Result.Builder setPlayer(int slot, @NotNull ItemStack item) {
+                playerInventoryChanges.put(slot, item);
                 return this;
             }
 

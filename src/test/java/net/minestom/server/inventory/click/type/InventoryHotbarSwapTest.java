@@ -24,9 +24,9 @@ public class InventoryHotbarSwapTest {
     @Test
     public void testSwappedItems() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.DIRT)).change(0, ItemStack.of(Material.STONE), true),
+                builder -> builder.set(0, ItemStack.of(Material.DIRT)).setPlayer(0, ItemStack.of(Material.STONE)),
                 new Click.Info.HotbarSwap(0, 0),
-                builder -> builder.change(0, ItemStack.of(Material.STONE)).change(0, ItemStack.of(Material.DIRT), true)
+                builder -> builder.set(0, ItemStack.of(Material.STONE)).setPlayer(0, ItemStack.of(Material.DIRT))
         );
     }
 

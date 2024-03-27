@@ -24,9 +24,9 @@ public class InventoryShiftClickTest {
     @Test
     public void testSimpleTransfer() {
         assertClick(
-                builder -> builder.change(9, ItemStack.of(Material.STONE, 32), true),
+                builder -> builder.setPlayer(9, ItemStack.of(Material.STONE, 32)),
                 new Click.Info.LeftShift(SIZE),
-                builder -> builder.change(0, ItemStack.of(Material.STONE, 32)).change(9, ItemStack.AIR, true)
+                builder -> builder.set(0, ItemStack.of(Material.STONE, 32)).setPlayer(9, ItemStack.AIR)
         );
     }
 
@@ -34,15 +34,15 @@ public class InventoryShiftClickTest {
     public void testSeparatedTransfer() {
         assertClick(
                 builder -> builder
-                        .change(9, ItemStack.of(Material.STONE, 64), true)
-                        .change(0, ItemStack.of(Material.STONE, 32))
-                        .change(1, ItemStack.of(Material.STONE, 32))
+                        .setPlayer(9, ItemStack.of(Material.STONE, 64))
+                        .set(0, ItemStack.of(Material.STONE, 32))
+                        .set(1, ItemStack.of(Material.STONE, 32))
                         ,
                 new Click.Info.LeftShift(SIZE),
                 builder -> builder
-                        .change(9, ItemStack.AIR, true)
-                        .change(0, ItemStack.of(Material.STONE, 64))
-                        .change(1, ItemStack.of(Material.STONE, 64))
+                        .setPlayer(9, ItemStack.AIR)
+                        .set(0, ItemStack.of(Material.STONE, 64))
+                        .set(1, ItemStack.of(Material.STONE, 64))
                         
         );
     }
@@ -51,13 +51,13 @@ public class InventoryShiftClickTest {
     public void testSeparatedAndNewTransfer() {
         assertClick(
                 builder -> builder
-                        .change(9, ItemStack.of(Material.STONE, 64), true)
-                        .change(0, ItemStack.of(Material.STONE, 32)),
+                        .setPlayer(9, ItemStack.of(Material.STONE, 64))
+                        .set(0, ItemStack.of(Material.STONE, 32)),
                 new Click.Info.LeftShift(SIZE),
                 builder -> builder
-                        .change(9, ItemStack.AIR, true)
-                        .change(0, ItemStack.of(Material.STONE, 64))
-                        .change(1, ItemStack.of(Material.STONE, 32))
+                        .setPlayer(9, ItemStack.AIR)
+                        .set(0, ItemStack.of(Material.STONE, 64))
+                        .set(1, ItemStack.of(Material.STONE, 32))
                         
         );
     }
@@ -66,16 +66,16 @@ public class InventoryShiftClickTest {
     public void testPartialTransfer() {
         assertClick(
                 builder -> builder
-                        .change(9, ItemStack.of(Material.STONE, 64), true)
-                        .change(0, ItemStack.of(Material.STONE, 32))
-                        .change(1, ItemStack.of(Material.DIRT))
-                        .change(2, ItemStack.of(Material.DIRT))
-                        .change(3, ItemStack.of(Material.DIRT))
-                        .change(4, ItemStack.of(Material.DIRT)),
+                        .setPlayer(9, ItemStack.of(Material.STONE, 64))
+                        .set(0, ItemStack.of(Material.STONE, 32))
+                        .set(1, ItemStack.of(Material.DIRT))
+                        .set(2, ItemStack.of(Material.DIRT))
+                        .set(3, ItemStack.of(Material.DIRT))
+                        .set(4, ItemStack.of(Material.DIRT)),
                 new Click.Info.LeftShift(SIZE),
                 builder -> builder
-                        .change(9, ItemStack.of(Material.STONE, 32), true)
-                        .change(0, ItemStack.of(Material.STONE, 64))
+                        .setPlayer(9, ItemStack.of(Material.STONE, 32))
+                        .set(0, ItemStack.of(Material.STONE, 64))
                         
         );
     }
@@ -84,24 +84,24 @@ public class InventoryShiftClickTest {
     public void testCannotTransfer() {
         assertClick(
                 builder -> builder
-                        .change(9, ItemStack.of(Material.STONE, 64), true)
-                        .change(0, ItemStack.of(Material.STONE, 64))
-                        .change(1, ItemStack.of(Material.DIRT))
-                        .change(2, ItemStack.of(Material.DIRT))
-                        .change(3, ItemStack.of(Material.DIRT))
-                        .change(4, ItemStack.of(Material.DIRT)),
+                        .setPlayer(9, ItemStack.of(Material.STONE, 64))
+                        .set(0, ItemStack.of(Material.STONE, 64))
+                        .set(1, ItemStack.of(Material.DIRT))
+                        .set(2, ItemStack.of(Material.DIRT))
+                        .set(3, ItemStack.of(Material.DIRT))
+                        .set(4, ItemStack.of(Material.DIRT)),
                 new Click.Info.LeftShift(SIZE), // Equivalent to player slot 9
                 builder -> builder
         );
 
         assertClick(
                 builder -> builder
-                        .change(9, ItemStack.of(Material.STONE, 64), true)
-                        .change(0, ItemStack.of(Material.DIRT))
-                        .change(1, ItemStack.of(Material.DIRT))
-                        .change(2, ItemStack.of(Material.DIRT))
-                        .change(3, ItemStack.of(Material.DIRT))
-                        .change(4, ItemStack.of(Material.DIRT)),
+                        .setPlayer(9, ItemStack.of(Material.STONE, 64))
+                        .set(0, ItemStack.of(Material.DIRT))
+                        .set(1, ItemStack.of(Material.DIRT))
+                        .set(2, ItemStack.of(Material.DIRT))
+                        .set(3, ItemStack.of(Material.DIRT))
+                        .set(4, ItemStack.of(Material.DIRT)),
                 new Click.Info.LeftShift(SIZE), // Equivalent to player slot 9
                 builder -> builder
         );
@@ -110,39 +110,39 @@ public class InventoryShiftClickTest {
     @Test
     public void testPlayerInteraction() {
         assertPlayerClick(
-                builder -> builder.change(9, ItemStack.of(Material.STONE, 32)),
+                builder -> builder.set(9, ItemStack.of(Material.STONE, 32)),
                 new Click.Info.LeftShift(9),
-                builder -> builder.change(9, ItemStack.AIR).change(0, ItemStack.of(Material.STONE, 32))
+                builder -> builder.set(9, ItemStack.AIR).set(0, ItemStack.of(Material.STONE, 32))
         );
 
         assertPlayerClick(
-                builder -> builder.change(8, ItemStack.of(Material.STONE, 32)),
+                builder -> builder.set(8, ItemStack.of(Material.STONE, 32)),
                 new Click.Info.LeftShift(8),
-                builder -> builder.change(8, ItemStack.AIR).change(9, ItemStack.of(Material.STONE, 32))
+                builder -> builder.set(8, ItemStack.AIR).set(9, ItemStack.of(Material.STONE, 32))
         );
 
         assertPlayerClick(
-                builder -> builder.change(9, ItemStack.of(Material.IRON_CHESTPLATE)),
+                builder -> builder.set(9, ItemStack.of(Material.IRON_CHESTPLATE)),
                 new Click.Info.LeftShift(9),
-                builder -> builder.change(9, ItemStack.AIR).change(PlayerInventoryUtils.CHESTPLATE_SLOT, ItemStack.of(Material.IRON_CHESTPLATE))
+                builder -> builder.set(9, ItemStack.AIR).set(PlayerInventoryUtils.CHESTPLATE_SLOT, ItemStack.of(Material.IRON_CHESTPLATE))
         );
 
         assertPlayerClick(
-                builder -> builder.change(PlayerInventoryUtils.CHESTPLATE_SLOT, ItemStack.of(Material.IRON_CHESTPLATE)),
+                builder -> builder.set(PlayerInventoryUtils.CHESTPLATE_SLOT, ItemStack.of(Material.IRON_CHESTPLATE)),
                 new Click.Info.LeftShift(PlayerInventoryUtils.CHESTPLATE_SLOT),
-                builder -> builder.change(PlayerInventoryUtils.CHESTPLATE_SLOT, ItemStack.AIR).change(9, ItemStack.of(Material.IRON_CHESTPLATE))
+                builder -> builder.set(PlayerInventoryUtils.CHESTPLATE_SLOT, ItemStack.AIR).set(9, ItemStack.of(Material.IRON_CHESTPLATE))
         );
 
         assertPlayerClick(
-                builder -> builder.change(9, ItemStack.of(Material.SHIELD)),
+                builder -> builder.set(9, ItemStack.of(Material.SHIELD)),
                 new Click.Info.LeftShift(9),
-                builder -> builder.change(9, ItemStack.AIR).change(PlayerInventoryUtils.OFF_HAND_SLOT, ItemStack.of(Material.SHIELD))
+                builder -> builder.set(9, ItemStack.AIR).set(PlayerInventoryUtils.OFF_HAND_SLOT, ItemStack.of(Material.SHIELD))
         );
 
         assertPlayerClick(
-                builder -> builder.change(PlayerInventoryUtils.OFF_HAND_SLOT, ItemStack.of(Material.SHIELD)),
+                builder -> builder.set(PlayerInventoryUtils.OFF_HAND_SLOT, ItemStack.of(Material.SHIELD)),
                 new Click.Info.LeftShift(PlayerInventoryUtils.OFF_HAND_SLOT),
-                builder -> builder.change(PlayerInventoryUtils.OFF_HAND_SLOT, ItemStack.AIR).change(9, ItemStack.of(Material.SHIELD))
+                builder -> builder.set(PlayerInventoryUtils.OFF_HAND_SLOT, ItemStack.AIR).set(9, ItemStack.of(Material.SHIELD))
         );
     }
 

@@ -31,24 +31,24 @@ public class InventoryDoubleClickTest {
     @Test
     public void testPartialTake() {
         assertClick(
-                builder -> builder.change(1, ItemStack.of(Material.STONE, 48)).cursor(ItemStack.of(Material.STONE, 32)),
+                builder -> builder.set(1, ItemStack.of(Material.STONE, 48)).cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.Double(0),
-                builder -> builder.change(1, ItemStack.of(Material.STONE, 16)).cursor(ItemStack.of(Material.STONE, 64))
+                builder -> builder.set(1, ItemStack.of(Material.STONE, 16)).cursor(ItemStack.of(Material.STONE, 64))
         );
     }
 
     @Test
     public void testTakeAll() {
         assertClick(
-                builder -> builder.change(1, ItemStack.of(Material.STONE, 32)).cursor(ItemStack.of(Material.STONE, 32)),
+                builder -> builder.set(1, ItemStack.of(Material.STONE, 32)).cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.Double(0),
-                builder -> builder.change(1, ItemStack.AIR).cursor(ItemStack.of(Material.STONE, 64))
+                builder -> builder.set(1, ItemStack.AIR).cursor(ItemStack.of(Material.STONE, 64))
         );
 
         assertClick(
-                builder -> builder.change(1, ItemStack.of(Material.STONE, 16)).cursor(ItemStack.of(Material.STONE, 32)),
+                builder -> builder.set(1, ItemStack.of(Material.STONE, 16)).cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.Double(0),
-                builder -> builder.change(1, ItemStack.AIR).cursor(ItemStack.of(Material.STONE, 48))
+                builder -> builder.set(1, ItemStack.AIR).cursor(ItemStack.of(Material.STONE, 48))
         );
     }
 
@@ -56,25 +56,25 @@ public class InventoryDoubleClickTest {
     public void testTakeSeparated() {
         assertClick(
                 builder -> builder
-                        .change(1, ItemStack.of(Material.STONE, 16))
-                        .change(2, ItemStack.of(Material.STONE, 16))
+                        .set(1, ItemStack.of(Material.STONE, 16))
+                        .set(2, ItemStack.of(Material.STONE, 16))
                         .cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.Double(0),
                 builder -> builder
-                        .change(1, ItemStack.AIR)
-                        .change(2, ItemStack.AIR)
+                        .set(1, ItemStack.AIR)
+                        .set(2, ItemStack.AIR)
                         .cursor(ItemStack.of(Material.STONE, 64))
         );
 
         assertClick(
                 builder -> builder
-                        .change(1, ItemStack.of(Material.STONE, 16))
-                        .change(2, ItemStack.of(Material.STONE, 32))
+                        .set(1, ItemStack.of(Material.STONE, 16))
+                        .set(2, ItemStack.of(Material.STONE, 32))
                         .cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.Double(0),
                 builder -> builder
-                        .change(1, ItemStack.AIR)
-                        .change(2, ItemStack.of(Material.STONE, 16))
+                        .set(1, ItemStack.AIR)
+                        .set(2, ItemStack.of(Material.STONE, 16))
                         .cursor(ItemStack.of(Material.STONE, 64))
         );
     }
@@ -82,7 +82,7 @@ public class InventoryDoubleClickTest {
     @Test
     public void testCursorFull() {
         assertClick(
-                builder -> builder.change(1, ItemStack.of(Material.STONE, 48)).cursor(ItemStack.of(Material.STONE, 64)),
+                builder -> builder.set(1, ItemStack.of(Material.STONE, 48)).cursor(ItemStack.of(Material.STONE, 64)),
                 new Click.Info.Double(0),
                 builder -> builder
         );

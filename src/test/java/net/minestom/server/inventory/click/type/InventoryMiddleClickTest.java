@@ -22,7 +22,7 @@ public class InventoryMiddleClickTest {
     @Test
     public void testCopy() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 64)),
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 64)),
                 new Click.Info.Middle(0),
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 64))
         );
@@ -31,7 +31,7 @@ public class InventoryMiddleClickTest {
     @Test
     public void testCopyNotFull() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 32)),
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 32)),
                 new Click.Info.Middle(0),
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 64))
         );

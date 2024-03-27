@@ -22,7 +22,7 @@ public class FurnaceInventory extends ContainerInventory {
      */
     public static final @NotNull ClickHandler FURNACE_HANDLER = new StandardClickHandler(
             (builder, item, slot) -> {
-                int size = builder.clickedInventory().getSize();
+                int size = builder.clickedSize();
                 if (slot < size) {
                     return PlayerInventory.getInnerShiftClickSlots(builder, item, slot);
                 } else if (slot < size + 27) {
@@ -32,7 +32,7 @@ public class FurnaceInventory extends ContainerInventory {
                 }
             },
             (builder, item, slot) -> IntIterators.pour(IntIterators.concat(
-                    IntIterators.fromTo(0, builder.clickedInventory().getSize()),
+                    IntIterators.fromTo(0, builder.clickedSize()),
                     PlayerInventory.getInnerDoubleClickSlots(builder, item, slot).iterator()
             )));
 

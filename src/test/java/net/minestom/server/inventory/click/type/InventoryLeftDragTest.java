@@ -34,7 +34,7 @@ public class InventoryLeftDragTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 32)),
                 new Click.Info.LeftDrag(IntList.of(0)),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 32)).cursor(ItemStack.of(Material.AIR))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 32)).cursor(ItemStack.of(Material.AIR))
         );
     }
 
@@ -43,16 +43,16 @@ public class InventoryLeftDragTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 32)),
                 new Click.Info.LeftDrag(IntList.of(0, 1)),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 16)).change(1, ItemStack.of(Material.DIRT, 16)).cursor(ItemStack.of(Material.AIR))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 16)).set(1, ItemStack.of(Material.DIRT, 16)).cursor(ItemStack.of(Material.AIR))
         );
 
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 30)),
                 new Click.Info.LeftDrag(IntList.of(0, 1, 2)),
                 builder -> builder
-                        .change(0, ItemStack.of(Material.DIRT, 10))
-                        .change(1, ItemStack.of(Material.DIRT, 10))
-                        .change(2, ItemStack.of(Material.DIRT, 10))
+                        .set(0, ItemStack.of(Material.DIRT, 10))
+                        .set(1, ItemStack.of(Material.DIRT, 10))
+                        .set(2, ItemStack.of(Material.DIRT, 10))
                         .cursor(ItemStack.of(Material.AIR))
         );
     }
@@ -63,9 +63,9 @@ public class InventoryLeftDragTest {
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 32)),
                 new Click.Info.LeftDrag(IntList.of(0, 1, 2)),
                 builder -> builder
-                        .change(0, ItemStack.of(Material.DIRT, 10))
-                        .change(1, ItemStack.of(Material.DIRT, 10))
-                        .change(2, ItemStack.of(Material.DIRT, 10))
+                        .set(0, ItemStack.of(Material.DIRT, 10))
+                        .set(1, ItemStack.of(Material.DIRT, 10))
+                        .set(2, ItemStack.of(Material.DIRT, 10))
                         .cursor(ItemStack.of(Material.DIRT, 2))
         );
 
@@ -73,10 +73,10 @@ public class InventoryLeftDragTest {
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 25)),
                 new Click.Info.LeftDrag(IntList.of(0, 1, 2, 3)),
                 builder -> builder
-                        .change(0, ItemStack.of(Material.DIRT, 6))
-                        .change(1, ItemStack.of(Material.DIRT, 6))
-                        .change(2, ItemStack.of(Material.DIRT, 6))
-                        .change(3, ItemStack.of(Material.DIRT, 6))
+                        .set(0, ItemStack.of(Material.DIRT, 6))
+                        .set(1, ItemStack.of(Material.DIRT, 6))
+                        .set(2, ItemStack.of(Material.DIRT, 6))
+                        .set(3, ItemStack.of(Material.DIRT, 6))
                         .cursor(ItemStack.of(Material.DIRT, 1))
         );
     }
@@ -84,16 +84,16 @@ public class InventoryLeftDragTest {
     @Test
     public void testDistributeOverExisting() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 16)).cursor(ItemStack.of(Material.DIRT, 32)),
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 16)).cursor(ItemStack.of(Material.DIRT, 32)),
                 new Click.Info.LeftDrag(IntList.of(0)),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 48)).cursor(ItemStack.of(Material.AIR))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 48)).cursor(ItemStack.of(Material.AIR))
         );
     }
 
     @Test
     public void testDistributeOverFull() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 64)).cursor(ItemStack.of(Material.DIRT, 32)),
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 64)).cursor(ItemStack.of(Material.DIRT, 32)),
                 new Click.Info.LeftDrag(IntList.of(0)),
                 builder -> builder
         );

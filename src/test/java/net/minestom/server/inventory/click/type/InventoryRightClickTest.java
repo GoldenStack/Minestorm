@@ -22,16 +22,16 @@ public class InventoryRightClickTest {
     @Test
     public void testAddOne() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.STONE, 32)).cursor(ItemStack.of(Material.STONE, 32)),
+                builder -> builder.set(0, ItemStack.of(Material.STONE, 32)).cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.Right(0),
-                builder -> builder.change(0, ItemStack.of(Material.STONE, 33)).cursor(ItemStack.of(Material.STONE, 31))
+                builder -> builder.set(0, ItemStack.of(Material.STONE, 33)).cursor(ItemStack.of(Material.STONE, 31))
         );
     }
 
     @Test
     public void testClickedStackFull() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.STONE, 64)).cursor(ItemStack.of(Material.STONE, 32)),
+                builder -> builder.set(0, ItemStack.of(Material.STONE, 64)).cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.Right(0),
                 builder -> builder
         );
@@ -40,9 +40,9 @@ public class InventoryRightClickTest {
     @Test
     public void testTakeHalf() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.STONE, 32)),
+                builder -> builder.set(0, ItemStack.of(Material.STONE, 32)),
                 new Click.Info.Right(0),
-                builder -> builder.change(0, ItemStack.of(Material.STONE, 16)).cursor(ItemStack.of(Material.STONE, 16))
+                builder -> builder.set(0, ItemStack.of(Material.STONE, 16)).cursor(ItemStack.of(Material.STONE, 16))
         );
     }
 
@@ -51,16 +51,16 @@ public class InventoryRightClickTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.Right(0),
-                builder -> builder.change(0, ItemStack.of(Material.STONE, 1)).cursor(ItemStack.of(Material.STONE, 31))
+                builder -> builder.set(0, ItemStack.of(Material.STONE, 1)).cursor(ItemStack.of(Material.STONE, 31))
         );
     }
 
     @Test
     public void testSwitchItems() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.STONE)).cursor(ItemStack.of(Material.DIRT)),
+                builder -> builder.set(0, ItemStack.of(Material.STONE)).cursor(ItemStack.of(Material.DIRT)),
                 new Click.Info.Right(0),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT)).cursor(ItemStack.of(Material.STONE))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT)).cursor(ItemStack.of(Material.STONE))
         );
     }
 

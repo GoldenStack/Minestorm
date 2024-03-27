@@ -34,7 +34,7 @@ public class InventoryRightDragTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 32)),
                 new Click.Info.RightDrag(IntList.of(0)),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT)).cursor(ItemStack.of(Material.DIRT, 31))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT)).cursor(ItemStack.of(Material.DIRT, 31))
         );
     }
 
@@ -43,7 +43,7 @@ public class InventoryRightDragTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 2)),
                 new Click.Info.RightDrag(IntList.of(0, 1)),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT)).change(1, ItemStack.of(Material.DIRT)).cursor(ItemStack.of(Material.AIR))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT)).set(1, ItemStack.of(Material.DIRT)).cursor(ItemStack.of(Material.AIR))
         );
     }
 
@@ -52,23 +52,23 @@ public class InventoryRightDragTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 2)),
                 new Click.Info.RightDrag(IntList.of(0, 1, 2)),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT)).change(1, ItemStack.of(Material.DIRT)).cursor(ItemStack.of(Material.AIR))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT)).set(1, ItemStack.of(Material.DIRT)).cursor(ItemStack.of(Material.AIR))
         );
     }
 
     @Test
     public void testDistributeOverExisting() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 16)).cursor(ItemStack.of(Material.DIRT, 32)),
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 16)).cursor(ItemStack.of(Material.DIRT, 32)),
                 new Click.Info.RightDrag(IntList.of(0)),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 17)).cursor(ItemStack.of(Material.DIRT, 31))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 17)).cursor(ItemStack.of(Material.DIRT, 31))
         );
     }
 
     @Test
     public void testDistributeOverFull() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 64)).cursor(ItemStack.of(Material.DIRT, 32)),
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 64)).cursor(ItemStack.of(Material.DIRT, 32)),
                 new Click.Info.RightDrag(IntList.of(0)),
                 builder -> builder
         );

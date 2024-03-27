@@ -61,9 +61,9 @@ public class StandardClickHandler implements ClickHandler {
 
         Pair<ItemStack, ItemStack> pair = TransactionOperator.STACK_LEFT.apply(clickedItem, cursor);
         if (pair != null) { // Stackable items, combine their counts
-            return builder.change(info.slot(), pair.left()).cursor(pair.right()).build();
+            return builder.set(info.slot(), pair.left()).cursor(pair.right()).build();
         } else if (!RULE.canBeStacked(cursor, clickedItem)) { // If they're unstackable, switch them
-            return builder.change(info.slot(), cursor).cursor(clickedItem).build();
+            return builder.set(info.slot(), cursor).cursor(clickedItem).build();
         } else {
             return builder.build();
         }
@@ -81,13 +81,13 @@ public class StandardClickHandler implements ClickHandler {
             int newAmount = (int) Math.ceil(RULE.getAmount(clickedItem) / 2d);
             Pair<ItemStack, ItemStack> cursorSlot = TransactionOperator.stackLeftN(newAmount).apply(cursor, clickedItem);
             return cursorSlot == null ? builder.build() :
-                    builder.cursor(cursorSlot.left()).change(slot, cursorSlot.right()).build();
+                    builder.cursor(cursorSlot.left()).set(slot, cursorSlot.right()).build();
         } else if (clickedItem.isAir() || RULE.canBeStacked(clickedItem, cursor)) { // Can add, transfer one over
             Pair<ItemStack, ItemStack> slotCursor = TransactionOperator.stackLeftN(1).apply(clickedItem, cursor);
             return slotCursor == null ? builder.build() :
-                    builder.change(slot, slotCursor.left()).cursor(slotCursor.right()).build();
+                    builder.set(slot, slotCursor.left()).cursor(slotCursor.right()).build();
         } else { // Two existing of items of different types, so switch
-            return builder.cursor(clickedItem).change(slot, cursor).build();
+            return builder.cursor(clickedItem).set(slot, cursor).build();
         }
     }
 
@@ -110,7 +110,7 @@ public class StandardClickHandler implements ClickHandler {
         ItemStack result = TransactionType.add(slots, slots).process(clicked, builder);
 
         if (!result.equals(clicked)) {
-            builder.change(slot, result);
+            builder.set(slot, result);
         }
 
         return builder.build();
@@ -170,7 +170,7 @@ public class StandardClickHandler implements ClickHandler {
 
         for (int slot : info.slots()) {
             if (builder.get(slot).isAir()) {
-                builder.change(slot, cursor);
+                builder.set(slot, cursor);
             }
         }
 
@@ -216,13 +216,13 @@ public class StandardClickHandler implements ClickHandler {
         if (item.isAir()) return builder.build(); // Do nothing
 
         if (info.all()) { // Drop everything
-            return builder.change(info.slot(), ItemStack.AIR)
+            return builder.set(info.slot(), ItemStack.AIR)
                     .sideEffects(new Click.Result.SideEffects.DropFromPlayer(item))
                     .build();
         } else { // Drop one, and the item must have at least one count
             var droppedItem = RULE.apply(item, 1);
             var newItem = RULE.apply(item, count -> count - 1);
-            return builder.change(info.slot(), newItem)
+            return builder.set(info.slot(), newItem)
                     .sideEffects(new Click.Result.SideEffects.DropFromPlayer(droppedItem))
                     .build();
         }
@@ -230,12 +230,12 @@ public class StandardClickHandler implements ClickHandler {
 
     @Override
     public @NotNull Click.Result hotbarSwap(@NotNull Click.Info.HotbarSwap info, @NotNull Click.Result.Builder builder) {
-        var hotbarItem = builder.get(info.hotbarSlot(), true);
+        var hotbarItem = builder.getPlayer(info.hotbarSlot());
         var selectedItem = builder.get(info.clickedSlot());
 
         if (!hotbarItem.isAir() || !selectedItem.isAir()) {
-            return builder.change(info.hotbarSlot(), selectedItem, true)
-                    .change(info.clickedSlot(), hotbarItem)
+            return builder.setPlayer(info.hotbarSlot(), selectedItem)
+                    .set(info.clickedSlot(), hotbarItem)
                     .build();
         } else {
             return builder.build();
@@ -244,12 +244,12 @@ public class StandardClickHandler implements ClickHandler {
 
     @Override
     public @NotNull Click.Result offhandSwap(@NotNull Click.Info.OffhandSwap info, @NotNull Click.Result.Builder builder) {
-        var offhandItem = builder.get(PlayerInventoryUtils.OFF_HAND_SLOT, true);
+        var offhandItem = builder.getPlayer(PlayerInventoryUtils.OFF_HAND_SLOT);
         var selectedItem = builder.get(info.slot());
 
         if (!offhandItem.isAir() || !selectedItem.isAir()) {
-            return builder.change(PlayerInventoryUtils.OFF_HAND_SLOT, selectedItem, true)
-                    .change(info.slot(), offhandItem)
+            return builder.setPlayer(PlayerInventoryUtils.OFF_HAND_SLOT, selectedItem)
+                    .set(info.slot(), offhandItem)
                     .build();
         } else {
             return builder.build();
@@ -258,7 +258,7 @@ public class StandardClickHandler implements ClickHandler {
 
     @Override
     public @NotNull Click.Result creativeSetItem(@NotNull Click.Info.CreativeSetItem info, @NotNull Click.Result.Builder builder) {
-        return builder.change(info.slot(), info.item()).build();
+        return builder.set(info.slot(), info.item()).build();
     }
 
     @Override

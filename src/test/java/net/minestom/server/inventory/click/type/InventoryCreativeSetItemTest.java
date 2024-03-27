@@ -19,14 +19,14 @@ public class InventoryCreativeSetItemTest {
         assertClick(
                 builder -> builder,
                 new Click.Info.CreativeSetItem(0, ItemStack.of(Material.DIRT, 64)),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 64))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 64))
         );
 
         // Make sure it doesn't set a full stack
         assertClick(
                 builder -> builder,
                 new Click.Info.CreativeSetItem(0, ItemStack.of(Material.DIRT, 1)),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT, 1))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT, 1))
         );
     }
 

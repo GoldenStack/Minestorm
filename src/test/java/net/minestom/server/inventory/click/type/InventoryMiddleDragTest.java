@@ -23,7 +23,7 @@ public class InventoryMiddleDragTest {
     @Test
     public void testExistingSlots() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.STONE)).cursor(ItemStack.of(Material.DIRT)),
+                builder -> builder.set(0, ItemStack.of(Material.STONE)).cursor(ItemStack.of(Material.DIRT)),
                 new Click.Info.MiddleDrag(IntList.of(0)),
                 builder -> builder
         );
@@ -32,9 +32,9 @@ public class InventoryMiddleDragTest {
     @Test
     public void testPartialExistingSlots() {
         assertClick(
-                builder -> builder.change(0, ItemStack.of(Material.STONE)).cursor(ItemStack.of(Material.DIRT)),
+                builder -> builder.set(0, ItemStack.of(Material.STONE)).cursor(ItemStack.of(Material.DIRT)),
                 new Click.Info.MiddleDrag(IntList.of(0, 1)),
-                builder -> builder.change(1, ItemStack.of(Material.DIRT))
+                builder -> builder.set(1, ItemStack.of(Material.DIRT))
         );
     }
 
@@ -43,7 +43,7 @@ public class InventoryMiddleDragTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT)),
                 new Click.Info.MiddleDrag(IntList.of(0, 1)),
-                builder -> builder.change(0, ItemStack.of(Material.DIRT)).change(1, ItemStack.of(Material.DIRT))
+                builder -> builder.set(0, ItemStack.of(Material.DIRT)).set(1, ItemStack.of(Material.DIRT))
         );
     }
 
