@@ -2,14 +2,14 @@ package net.minestom.server.inventory.click.type;
 
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.inventory.click.ClickInfo;
+import net.minestom.server.inventory.click.Click;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.junit.jupiter.api.Test;
 
 import static net.minestom.server.inventory.click.ClickUtils.assertClick;
 
-public class InventoryDragEvenlyTest {
+public class InventoryLeftDragTest {
 
     static {
         MinecraftServer.init();
@@ -17,14 +17,14 @@ public class InventoryDragEvenlyTest {
 
     @Test
     public void testNoCursor() {
-        assertClick(builder -> builder, new ClickInfo.DragClick(IntList.of(0), true), builder -> builder);
+        assertClick(builder -> builder, new Click.Info.LeftDrag(IntList.of(0)), builder -> builder);
     }
 
     @Test
     public void testDistributeNone() {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 32)),
-                new ClickInfo.DragClick(IntList.of(), true),
+                new Click.Info.LeftDrag(IntList.of()),
                 builder -> builder
         );
     }
@@ -33,7 +33,7 @@ public class InventoryDragEvenlyTest {
     public void testDistributeOne() {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 32)),
-                new ClickInfo.DragClick(IntList.of(0), true),
+                new Click.Info.LeftDrag(IntList.of(0)),
                 builder -> builder.change(0, ItemStack.of(Material.DIRT, 32)).cursor(ItemStack.of(Material.AIR))
         );
     }
@@ -42,13 +42,13 @@ public class InventoryDragEvenlyTest {
     public void testDistributeExactlyEnough() {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 32)),
-                new ClickInfo.DragClick(IntList.of(0, 1), true),
+                new Click.Info.LeftDrag(IntList.of(0, 1)),
                 builder -> builder.change(0, ItemStack.of(Material.DIRT, 16)).change(1, ItemStack.of(Material.DIRT, 16)).cursor(ItemStack.of(Material.AIR))
         );
 
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 30)),
-                new ClickInfo.DragClick(IntList.of(0, 1, 2), true),
+                new Click.Info.LeftDrag(IntList.of(0, 1, 2)),
                 builder -> builder
                         .change(0, ItemStack.of(Material.DIRT, 10))
                         .change(1, ItemStack.of(Material.DIRT, 10))
@@ -61,7 +61,7 @@ public class InventoryDragEvenlyTest {
     public void testRemainderItems() {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 32)),
-                new ClickInfo.DragClick(IntList.of(0, 1, 2), true),
+                new Click.Info.LeftDrag(IntList.of(0, 1, 2)),
                 builder -> builder
                         .change(0, ItemStack.of(Material.DIRT, 10))
                         .change(1, ItemStack.of(Material.DIRT, 10))
@@ -71,7 +71,7 @@ public class InventoryDragEvenlyTest {
 
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.DIRT, 25)),
-                new ClickInfo.DragClick(IntList.of(0, 1, 2, 3), true),
+                new Click.Info.LeftDrag(IntList.of(0, 1, 2, 3)),
                 builder -> builder
                         .change(0, ItemStack.of(Material.DIRT, 6))
                         .change(1, ItemStack.of(Material.DIRT, 6))
@@ -85,7 +85,7 @@ public class InventoryDragEvenlyTest {
     public void testDistributeOverExisting() {
         assertClick(
                 builder -> builder.change(0, ItemStack.of(Material.DIRT, 16)).cursor(ItemStack.of(Material.DIRT, 32)),
-                new ClickInfo.DragClick(IntList.of(0), true),
+                new Click.Info.LeftDrag(IntList.of(0)),
                 builder -> builder.change(0, ItemStack.of(Material.DIRT, 48)).cursor(ItemStack.of(Material.AIR))
         );
     }
@@ -94,7 +94,7 @@ public class InventoryDragEvenlyTest {
     public void testDistributeOverFull() {
         assertClick(
                 builder -> builder.change(0, ItemStack.of(Material.DIRT, 64)).cursor(ItemStack.of(Material.DIRT, 32)),
-                new ClickInfo.DragClick(IntList.of(0), true),
+                new Click.Info.LeftDrag(IntList.of(0)),
                 builder -> builder
         );
     }

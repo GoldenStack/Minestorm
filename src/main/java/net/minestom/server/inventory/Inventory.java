@@ -2,7 +2,7 @@ package net.minestom.server.inventory;
 
 import net.minestom.server.Viewable;
 import net.minestom.server.entity.Player;
-import net.minestom.server.inventory.click.ClickInfo;
+import net.minestom.server.inventory.click.Click;
 import net.minestom.server.inventory.click.ClickPreprocessor;
 import net.minestom.server.inventory.click.ClickResult;
 import net.minestom.server.item.ItemStack;
@@ -53,10 +53,10 @@ public sealed interface Inventory extends Taggable, Viewable permits InventoryIm
      * null, this indicates that the click was cancelled or was otherwise not processed.
      *
      * @param player the player that clicked
-     * @param clickInfo the information about the player's click
+     * @param info the information about the player's click
      * @return the results of the click, or null if the click was cancelled or otherwise was not handled
      */
-    @Nullable ClickResult handleClick(@NotNull Player player, @NotNull ClickInfo clickInfo);
+    @Nullable ClickResult handleClick(@NotNull Player player, @NotNull Click.Info info);
 
     /**
      * Gets the click preprocessor for this inventory.

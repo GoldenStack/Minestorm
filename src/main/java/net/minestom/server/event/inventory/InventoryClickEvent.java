@@ -6,7 +6,7 @@ import net.minestom.server.event.trait.InventoryEvent;
 import net.minestom.server.event.trait.PlayerInstanceEvent;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.PlayerInventory;
-import net.minestom.server.inventory.click.ClickInfo;
+import net.minestom.server.inventory.click.Click;
 import net.minestom.server.inventory.click.ClickResult;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,17 +18,17 @@ public class InventoryClickEvent implements InventoryEvent, PlayerInstanceEvent,
     private final PlayerInventory playerInventory;
     private final Inventory inventory;
     private final Player player;
-    private final ClickInfo clickInfo;
+    private final Click.Info info;
     private ClickResult changes;
 
     private boolean cancelled;
 
     public InventoryClickEvent(@NotNull PlayerInventory playerInventory, @NotNull Inventory inventory,
-                               @NotNull Player player, @NotNull ClickInfo clickInfo, @NotNull ClickResult changes) {
+                               @NotNull Player player, @NotNull Click.Info info, @NotNull ClickResult changes) {
         this.playerInventory = playerInventory;
         this.inventory = inventory;
         this.player = player;
-        this.clickInfo = clickInfo;
+        this.info = info;
         this.changes = changes;
     }
 
@@ -46,8 +46,8 @@ public class InventoryClickEvent implements InventoryEvent, PlayerInstanceEvent,
      *
      * @return the click info
      */
-    public @NotNull ClickInfo getClickInfo() {
-        return clickInfo;
+    public @NotNull Click.Info getClickInfo() {
+        return info;
     }
 
     /**

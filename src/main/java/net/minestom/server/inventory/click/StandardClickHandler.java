@@ -53,21 +53,21 @@ public class StandardClickHandler implements ClickHandler {
     }
 
     @Override
-    public void leftClick(@NotNull ClickInfo.LeftClick info, @NotNull ClickResult.Builder builder) {
+    public void left(@NotNull Click.Info.Left info, @NotNull ClickResult.Builder builder) {
         ItemStack cursor = builder.getCursorItem();
-        ItemStack clickedItem = builder.get(info.clickedSlot());
+        ItemStack clickedItem = builder.get(info.slot());
 
         Pair<ItemStack, ItemStack> pair = TransactionOperator.STACK_LEFT.apply(clickedItem, cursor);
         if (pair != null) { // Stackable items, combine their counts
-            builder.change(info.clickedSlot(), pair.left()).cursor(pair.right());
+            builder.change(info.slot(), pair.left()).cursor(pair.right());
         } else if (!RULE.canBeStacked(cursor, clickedItem)) { // If they're unstackable, switch them
-            builder.change(info.clickedSlot(), cursor).cursor(clickedItem);
+            builder.change(info.slot(), cursor).cursor(clickedItem);
         }
     }
 
     @Override
-    public void rightClick(@NotNull ClickInfo.RightClick info, @NotNull ClickResult.Builder builder) {
-        int slot = info.clickedSlot();
+    public void right(@NotNull Click.Info.Right info, @NotNull ClickResult.Builder builder) {
+        int slot = info.slot();
         ItemStack cursor = builder.getCursorItem();
         ItemStack clickedItem = builder.get(slot);
 
@@ -90,73 +90,14 @@ public class StandardClickHandler implements ClickHandler {
     }
 
     @Override
-    public void dropSlot(@NotNull ClickInfo.DropSlot info, @NotNull ClickResult.Builder builder) {
-        var item = builder.get(info.clickedSlot());
-        if (item.isAir()) return; // Do nothing
-
-        if (info.all()) { // Drop everything
-            builder.change(info.clickedSlot(), ItemStack.AIR).sideEffects(new ClickResult.SideEffects.DropFromPlayer(item));
-        } else { // Drop one, and the item must have at least one count
-            var droppedItem = RULE.apply(item, 1);
-            var newItem = RULE.apply(item, count -> count - 1);
-            builder.change(info.clickedSlot(), newItem).sideEffects(new ClickResult.SideEffects.DropFromPlayer(droppedItem));
+    public void middle(@NotNull Click.Info.Middle info, @NotNull ClickResult.Builder builder) {
+        var item = builder.get(info.slot());
+        if (builder.getCursorItem().isAir() && !item.isAir()) {
+            builder.cursor(RULE.apply(item, RULE.getMaxSize(item)));
         }
     }
 
-    @Override
-    public void dropCursor(@NotNull ClickInfo.DropCursor info, @NotNull ClickResult.Builder builder) {
-        var cursor = builder.getCursorItem();
-        if (cursor.isAir()) return; // Do nothing
-
-        if (info.all()) { // Drop everything
-            builder.cursor(ItemStack.AIR).sideEffects(new ClickResult.SideEffects.DropFromPlayer(cursor));
-        } else { // Drop one, and the item must have at least one count
-            var droppedItem = RULE.apply(cursor, 1);
-            var newCursor = RULE.apply(cursor, count -> count - 1);
-            builder.cursor(newCursor).sideEffects(new ClickResult.SideEffects.DropFromPlayer(droppedItem));
-        }
-    }
-
-    @Override
-    public void hotbarSwap(@NotNull ClickInfo.HotbarSwap info, @NotNull ClickResult.Builder builder) {
-        var hotbarItem = builder.playerInventory().getItemStack(info.hotbarSlot());
-        var selectedItem = builder.get(info.clickedSlot());
-
-        if (!hotbarItem.isAir() || !selectedItem.isAir()) {
-            builder.change(info.hotbarSlot(), selectedItem, true).change(info.clickedSlot(), hotbarItem);
-        }
-    }
-
-    @Override
-    public void offhandSwap(@NotNull ClickInfo.OffhandSwap info, @NotNull ClickResult.Builder builder) {
-        var offhandItem = builder.playerInventory().getItemStack(PlayerInventoryUtils.OFF_HAND_SLOT);
-        var selectedItem = builder.get(info.clickedSlot());
-
-        if (!offhandItem.isAir() || !selectedItem.isAir()) {
-            builder.change(PlayerInventoryUtils.OFF_HAND_SLOT, selectedItem, true).change(info.clickedSlot(), offhandItem);
-        }
-    }
-
-    @Override
-    public void dragClick(@NotNull ClickInfo.DragClick info, @NotNull ClickResult.Builder builder) {
-        var slots = info.includedSlots();
-        var cursor = builder.getCursorItem();
-
-        if (cursor.isAir()) return;
-
-        int countPerSlot = info.evenlyDistribute() ?
-                (int) Math.floor(RULE.getAmount(cursor) / (double) slots.size()) : 1;
-
-        ItemStack result = TransactionType.general(TransactionOperator.stackLeftN(countPerSlot), slots).process(cursor, builder);
-
-        if (!result.equals(cursor)) {
-            builder.cursor(result);
-        }
-    }
-
-    @Override
-    public void shiftClick(@NotNull ClickInfo.ShiftClick info, @NotNull ClickResult.Builder builder) {
-        int slot = info.clickedSlot();
+    public void shift(int slot, @NotNull ClickResult.Builder builder) {
         ItemStack clicked = builder.get(slot);
 
         IntList slots = shiftClickSlots.get(builder, clicked, slot);
@@ -170,11 +111,21 @@ public class StandardClickHandler implements ClickHandler {
     }
 
     @Override
-    public void doubleClick(@NotNull ClickInfo.DoubleClick info, @NotNull ClickResult.Builder builder) {
+    public void leftShift(@NotNull Click.Info.LeftShift info, @NotNull ClickResult.Builder builder) {
+        shift(info.slot(), builder);
+    }
+
+    @Override
+    public void rightShift(Click.Info.@NotNull RightShift info, ClickResult.@NotNull Builder builder) {
+        shift(info.slot(), builder);
+    }
+
+    @Override
+    public void doubleClick(@NotNull Click.Info.Double info, @NotNull ClickResult.Builder builder) {
         var cursor = builder.getCursorItem();
         if (cursor.isAir()) return;
 
-        var slots = doubleClickSlots.get(builder, cursor, info.clickedSlot());
+        var slots = doubleClickSlots.get(builder, cursor, info.slot());
 
         var unstacked = TransactionType.general(TransactionOperator.filter(TransactionOperator.STACK_RIGHT, (first, second) -> RULE.getAmount(first) < RULE.getAmount(first)), slots);
         var stacked = TransactionType.general(TransactionOperator.filter(TransactionOperator.STACK_RIGHT, (first, second) -> RULE.getAmount(first) == RULE.getAmount(first)), slots);
@@ -185,24 +136,29 @@ public class StandardClickHandler implements ClickHandler {
         }
     }
 
-    @Override
-    public void creativeCopyItem(@NotNull ClickInfo.CreativeCopyItem info, @NotNull ClickResult.Builder builder) {
-        var item = builder.get(info.clickedSlot());
-        if (builder.getCursorItem().isAir() && !item.isAir()) {
-            builder.cursor(RULE.apply(item, RULE.getMaxSize(item)));
+    public void drag(int countPerSlot, @NotNull IntList slots, @NotNull ClickResult.Builder builder) {
+        var cursor = builder.getCursorItem();
+        if (cursor.isAir()) return;
+
+        ItemStack result = TransactionType.general(TransactionOperator.stackLeftN(countPerSlot), slots).process(cursor, builder);
+
+        if (!result.equals(cursor)) {
+            builder.cursor(result);
         }
     }
 
     @Override
-    public void creativeSetItem(@NotNull ClickInfo.CreativeSetItem info, @NotNull ClickResult.Builder builder) {
-        builder.change(info.slot(), info.item());
+    public void leftDrag(@NotNull Click.Info.LeftDrag info, @NotNull ClickResult.Builder builder) {
+        int cursorAmount = RULE.getAmount(builder.getCursorItem());
+        int amount = (int) Math.floor(cursorAmount / (double) info.slots().size());
+        drag(amount, info.slots(), builder);
     }
 
     @Override
-    public void creativeCopyCursor(@NotNull ClickInfo.CreativeCopyCursor info, @NotNull ClickResult.Builder builder) {
+    public void middleDrag(@NotNull Click.Info.MiddleDrag info, @NotNull ClickResult.Builder builder) {
         var cursor = builder.getCursorItem();
 
-        for (int slot : info.includedSlots()) {
+        for (int slot : info.slots()) {
             if (builder.get(slot).isAir()) {
                 builder.change(slot, cursor);
             }
@@ -210,7 +166,74 @@ public class StandardClickHandler implements ClickHandler {
     }
 
     @Override
-    public void creativeDropItem(@NotNull ClickInfo.CreativeDropItem info, @NotNull ClickResult.Builder builder) {
+    public void rightDrag(@NotNull Click.Info.RightDrag info, @NotNull ClickResult.Builder builder) {
+        drag(1, info.slots(), builder);
+    }
+
+    @Override
+    public void leftDropCursor(Click.Info.@NotNull LeftDropCursor info, ClickResult.@NotNull Builder builder) {
+        var cursor = builder.getCursorItem();
+        if (cursor.isAir()) return; // Do nothing
+
+        builder.cursor(ItemStack.AIR).sideEffects(new ClickResult.SideEffects.DropFromPlayer(cursor));
+    }
+
+    @Override
+    public void middleDropCursor(Click.Info.@NotNull MiddleDropCursor info, ClickResult.@NotNull Builder builder) {
+    }
+
+    @Override
+    public void rightDropCursor(Click.Info.@NotNull RightDropCursor info, ClickResult.@NotNull Builder builder) {
+        var cursor = builder.getCursorItem();
+        if (cursor.isAir()) return; // Do nothing
+
+        // Drop one, and the item must have at least one count
+        var droppedItem = RULE.apply(cursor, 1);
+        var newCursor = RULE.apply(cursor, count -> count - 1);
+        builder.cursor(newCursor).sideEffects(new ClickResult.SideEffects.DropFromPlayer(droppedItem));
+    }
+
+    @Override
+    public void dropSlot(@NotNull Click.Info.DropSlot info, @NotNull ClickResult.Builder builder) {
+        var item = builder.get(info.slot());
+        if (item.isAir()) return; // Do nothing
+
+        if (info.all()) { // Drop everything
+            builder.change(info.slot(), ItemStack.AIR).sideEffects(new ClickResult.SideEffects.DropFromPlayer(item));
+        } else { // Drop one, and the item must have at least one count
+            var droppedItem = RULE.apply(item, 1);
+            var newItem = RULE.apply(item, count -> count - 1);
+            builder.change(info.slot(), newItem).sideEffects(new ClickResult.SideEffects.DropFromPlayer(droppedItem));
+        }
+    }
+
+    @Override
+    public void hotbarSwap(@NotNull Click.Info.HotbarSwap info, @NotNull ClickResult.Builder builder) {
+        var hotbarItem = builder.playerInventory().getItemStack(info.hotbarSlot());
+        var selectedItem = builder.get(info.clickedSlot());
+
+        if (!hotbarItem.isAir() || !selectedItem.isAir()) {
+            builder.change(info.hotbarSlot(), selectedItem, true).change(info.clickedSlot(), hotbarItem);
+        }
+    }
+
+    @Override
+    public void offhandSwap(@NotNull Click.Info.OffhandSwap info, @NotNull ClickResult.Builder builder) {
+        var offhandItem = builder.playerInventory().getItemStack(PlayerInventoryUtils.OFF_HAND_SLOT);
+        var selectedItem = builder.get(info.slot());
+
+        if (!offhandItem.isAir() || !selectedItem.isAir()) {
+            builder.change(PlayerInventoryUtils.OFF_HAND_SLOT, selectedItem, true).change(info.slot(), offhandItem);
+        }
+    }
+
+    @Override
+    public void creativeSetItem(@NotNull Click.Info.CreativeSetItem info, @NotNull ClickResult.Builder builder) {
+        builder.change(info.slot(), info.item());
+    }
+
+    @Override
+    public void creativeDropItem(@NotNull Click.Info.CreativeDropItem info, @NotNull ClickResult.Builder builder) {
         builder.sideEffects(new ClickResult.SideEffects.DropFromPlayer(info.item()));
     }
 

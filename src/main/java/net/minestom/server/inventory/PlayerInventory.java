@@ -8,10 +8,7 @@ import net.minestom.server.entity.EquipmentSlot;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.item.EntityEquipEvent;
-import net.minestom.server.inventory.click.ClickHandler;
-import net.minestom.server.inventory.click.ClickInfo;
-import net.minestom.server.inventory.click.ClickResult;
-import net.minestom.server.inventory.click.StandardClickHandler;
+import net.minestom.server.inventory.click.*;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.SetSlotPacket;
@@ -211,8 +208,8 @@ public non-sealed class PlayerInventory extends InventoryImpl {
     }
 
     @Override
-    public @Nullable ClickResult handleClick(@NotNull Player player, @NotNull ClickInfo clickInfo) {
-        return CLICK_HANDLER.handleClick(this, player, clickInfo);
+    public @Nullable ClickResult handleClick(@NotNull Player player, @NotNull Click.Info info) {
+        return CLICK_HANDLER.handleClick(this, player, info);
     }
 
     public @NotNull ItemStack getEquipment(@NotNull EquipmentSlot slot, int heldSlot) {

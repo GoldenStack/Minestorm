@@ -13,7 +13,7 @@ import net.minestom.server.event.player.PlayerStartDiggingEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
-import net.minestom.server.inventory.click.ClickInfo;
+import net.minestom.server.inventory.click.Click;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.network.packet.client.play.ClientPlayerDiggingPacket;
 import net.minestom.server.network.packet.server.play.AcknowledgeBlockChangePacket;
@@ -41,13 +41,13 @@ public final class PlayerDiggingListener {
             if (!instance.isChunkLoaded(blockPosition)) return;
             diggingResult = finishDigging(player, instance, blockPosition, packet.blockFace());
         } else if (status == ClientPlayerDiggingPacket.Status.DROP_ITEM_STACK) {
-            player.getInventory().handleClick(player, new ClickInfo.DropSlot(player.getHeldSlot(), true));
+            player.getInventory().handleClick(player, new Click.Info.DropSlot(player.getHeldSlot(), true));
         } else if (status == ClientPlayerDiggingPacket.Status.DROP_ITEM) {
-            player.getInventory().handleClick(player, new ClickInfo.DropSlot(player.getHeldSlot(), false));
+            player.getInventory().handleClick(player, new Click.Info.DropSlot(player.getHeldSlot(), false));
         } else if (status == ClientPlayerDiggingPacket.Status.UPDATE_ITEM_STATE) {
             updateItemState(player);
         } else if (status == ClientPlayerDiggingPacket.Status.SWAP_ITEM_HAND) {
-            player.getInventory().handleClick(player, new ClickInfo.OffhandSwap(player.getHeldSlot()));
+            player.getInventory().handleClick(player, new Click.Info.OffhandSwap(player.getHeldSlot()));
         }
         // Acknowledge start/cancel/finish digging status
         if (diggingResult != null) {

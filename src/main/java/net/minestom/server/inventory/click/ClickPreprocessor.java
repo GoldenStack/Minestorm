@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 /**
- * Preprocesses click packets for an inventory, turning them into {@link ClickInfo} instances for further processing.
+ * Preprocesses click packets for an inventory, turning them into {@link Click.Info} instances for further processing.
  */
 public final class ClickPreprocessor {
 
@@ -41,12 +41,12 @@ public final class ClickPreprocessor {
     }
 
     /**
-     * Processes the provided click packet, turning it into a {@link ClickInfo}.
+     * Processes the provided click packet, turning it into a {@link Click.Info}.
      * @param player the player clicking
      * @param packet the raw click packet
      * @return the information about the click, or nothing if there was no immediately usable information
      */
-    public @Nullable ClickInfo process(@NotNull Player player, @NotNull ClientClickWindowPacket packet) {
+    public @Nullable Click.Info process(@NotNull Player player, @NotNull ClientClickWindowPacket packet) {
         final int originalSlot = packet.slot();
         final byte button = packet.button();
         final ClientClickWindowPacket.ClickType clickType = packet.clickType();
@@ -55,35 +55,40 @@ public final class ClickPreprocessor {
 
         return switch (clickType) {
             case PICKUP -> {
-                if (button == 0) {
-                    if (slot == -999) {
-                        yield new ClickInfo.DropCursor(true);
-                    } else if (validate(slot)) {
-                        yield new ClickInfo.LeftClick(slot);
-                    }
-                } else if (button == 1) {
-                    if (slot == -999) {
-                        yield new ClickInfo.DropCursor(false);
-                    } else if (validate(slot)) {
-                        yield new ClickInfo.RightClick(slot);
-                    }
+                if (packet.slot() == -999) {
+                    yield switch (button) {
+                        case 0 -> new Click.Info.LeftDropCursor();
+                        case 1 -> new Click.Info.RightDropCursor();
+                        case 2 -> new Click.Info.MiddleDropCursor();
+                        default -> null;
+                    };
                 }
-                yield null;
+
+                if (!validate(slot)) yield null;
+
+                yield switch(button) {
+                    case 0 -> new Click.Info.Left(slot);
+                    case 1 -> new Click.Info.Right(slot);
+                    default -> null;
+                };
             }
-            case QUICK_MOVE -> validate(slot) ? new ClickInfo.ShiftClick(slot, button == 0 ? ClickInfo.ShiftClick.Button.PRIMARY : ClickInfo.ShiftClick.Button.SECONDARY) : null;
+            case QUICK_MOVE -> {
+                if (!validate(slot)) yield null;
+                yield button == 0 ? new Click.Info.LeftShift(slot) : new Click.Info.RightShift(slot);
+            }
             case SWAP -> {
                 if (!validate(slot)) {
                     yield null;
                 } else if (button >= 0 && button < 9) {
-                    yield new ClickInfo.HotbarSwap(button, slot);
+                    yield new Click.Info.HotbarSwap(button, slot);
                 } else if (button == 40) {
-                    yield new ClickInfo.OffhandSwap(slot);
+                    yield new Click.Info.OffhandSwap(slot);
                 } else {
                     yield null;
                 }
             }
-            case CLONE -> (player.isCreative() && validate(slot)) ? new ClickInfo.CreativeCopyItem(slot) : null;
-            case THROW -> validate(slot) ? new ClickInfo.DropSlot(slot, button == 1) : null;
+            case CLONE -> (player.isCreative() && validate(slot)) ? new Click.Info.Middle(slot) : null;
+            case THROW -> validate(slot) ? new Click.Info.DropSlot(slot, button == 1) : null;
             case QUICK_CRAFT -> {
                 // Prevent invalid creative actions
                 if (!player.isCreative() && (button == 8 || button == 9 || button == 10)) yield null;
@@ -91,13 +96,13 @@ public final class ClickPreprocessor {
                 // Handle drag finishes
                 if (button == 2) {
                     var list = leftDraggingMap.remove(player);
-                    yield new ClickInfo.DragClick(list != null ? list : IntLists.emptyList(), true);
+                    yield new Click.Info.LeftDrag(list != null ? list : IntLists.emptyList());
                 } else if (button == 6) {
                     var list = rightDraggingMap.remove(player);
-                    yield new ClickInfo.DragClick(list != null ? list : IntLists.emptyList(), false);
+                    yield new Click.Info.RightDrag(list != null ? list : IntLists.emptyList());
                 } else if (button == 10) {
                     var list = creativeDragMap.remove(player);
-                    yield new ClickInfo.CreativeCopyCursor(list != null ? list : IntLists.emptyList());
+                    yield new Click.Info.MiddleDrag(list != null ? list : IntLists.emptyList());
                 }
 
                 // Handle intermediate state
@@ -123,7 +128,7 @@ public final class ClickPreprocessor {
 
                 yield null;
             }
-            case PICKUP_ALL -> validate(slot) ? new ClickInfo.DoubleClick(slot) : null;
+            case PICKUP_ALL -> validate(slot) ? new Click.Info.Double(slot) : null;
         };
     }
 

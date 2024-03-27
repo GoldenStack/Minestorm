@@ -1,7 +1,7 @@
 package net.minestom.server.inventory.click.type;
 
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.inventory.click.ClickInfo;
+import net.minestom.server.inventory.click.Click;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.junit.jupiter.api.Test;
@@ -16,14 +16,14 @@ public class InventoryRightClickTest {
 
     @Test
     public void testNoChanges() {
-        assertClick(builder -> builder, new ClickInfo.RightClick(0), builder -> builder);
+        assertClick(builder -> builder, new Click.Info.Right(0), builder -> builder);
     }
 
     @Test
     public void testAddOne() {
         assertClick(
                 builder -> builder.change(0, ItemStack.of(Material.STONE, 32)).cursor(ItemStack.of(Material.STONE, 32)),
-                new ClickInfo.RightClick(0),
+                new Click.Info.Right(0),
                 builder -> builder.change(0, ItemStack.of(Material.STONE, 33)).cursor(ItemStack.of(Material.STONE, 31))
         );
     }
@@ -32,7 +32,7 @@ public class InventoryRightClickTest {
     public void testClickedStackFull() {
         assertClick(
                 builder -> builder.change(0, ItemStack.of(Material.STONE, 64)).cursor(ItemStack.of(Material.STONE, 32)),
-                new ClickInfo.RightClick(0),
+                new Click.Info.Right(0),
                 builder -> builder
         );
     }
@@ -41,7 +41,7 @@ public class InventoryRightClickTest {
     public void testTakeHalf() {
         assertClick(
                 builder -> builder.change(0, ItemStack.of(Material.STONE, 32)),
-                new ClickInfo.RightClick(0),
+                new Click.Info.Right(0),
                 builder -> builder.change(0, ItemStack.of(Material.STONE, 16)).cursor(ItemStack.of(Material.STONE, 16))
         );
     }
@@ -50,7 +50,7 @@ public class InventoryRightClickTest {
     public void testLeaveOne() {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.STONE, 32)),
-                new ClickInfo.RightClick(0),
+                new Click.Info.Right(0),
                 builder -> builder.change(0, ItemStack.of(Material.STONE, 1)).cursor(ItemStack.of(Material.STONE, 31))
         );
     }
@@ -59,7 +59,7 @@ public class InventoryRightClickTest {
     public void testSwitchItems() {
         assertClick(
                 builder -> builder.change(0, ItemStack.of(Material.STONE)).cursor(ItemStack.of(Material.DIRT)),
-                new ClickInfo.RightClick(0),
+                new Click.Info.Right(0),
                 builder -> builder.change(0, ItemStack.of(Material.DIRT)).cursor(ItemStack.of(Material.STONE))
         );
     }

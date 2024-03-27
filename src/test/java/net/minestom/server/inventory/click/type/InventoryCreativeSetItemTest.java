@@ -1,7 +1,7 @@
 package net.minestom.server.inventory.click.type;
 
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.inventory.click.ClickInfo;
+import net.minestom.server.inventory.click.Click;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.junit.jupiter.api.Test;
@@ -18,14 +18,14 @@ public class InventoryCreativeSetItemTest {
     public void testSetItem() {
         assertClick(
                 builder -> builder,
-                new ClickInfo.CreativeSetItem(0, ItemStack.of(Material.DIRT, 64)),
+                new Click.Info.CreativeSetItem(0, ItemStack.of(Material.DIRT, 64)),
                 builder -> builder.change(0, ItemStack.of(Material.DIRT, 64))
         );
 
         // Make sure it doesn't set a full stack
         assertClick(
                 builder -> builder,
-                new ClickInfo.CreativeSetItem(0, ItemStack.of(Material.DIRT, 1)),
+                new Click.Info.CreativeSetItem(0, ItemStack.of(Material.DIRT, 1)),
                 builder -> builder.change(0, ItemStack.of(Material.DIRT, 1))
         );
     }

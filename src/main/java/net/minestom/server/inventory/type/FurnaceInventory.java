@@ -7,10 +7,7 @@ import net.minestom.server.inventory.ContainerInventory;
 import net.minestom.server.inventory.InventoryProperty;
 import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.inventory.PlayerInventory;
-import net.minestom.server.inventory.click.ClickHandler;
-import net.minestom.server.inventory.click.ClickInfo;
-import net.minestom.server.inventory.click.ClickResult;
-import net.minestom.server.inventory.click.StandardClickHandler;
+import net.minestom.server.inventory.click.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,8 +50,8 @@ public class FurnaceInventory extends ContainerInventory {
     }
 
     @Override
-    public @Nullable ClickResult handleClick(@NotNull Player player, @NotNull ClickInfo clickInfo) {
-        return FURNACE_HANDLER.handleClick(this, player, clickInfo);
+    public @Nullable ClickResult handleClick(@NotNull Player player, @NotNull Click.Info info) {
+        return FURNACE_HANDLER.handleClick(this, player, info);
     }
 
     /**

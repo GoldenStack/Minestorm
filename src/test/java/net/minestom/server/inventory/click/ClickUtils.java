@@ -47,7 +47,7 @@ public class ClickUtils {
         });
     }
 
-    public static void assertClick(@NotNull UnaryOperator<ClickResult.Builder> initialChanges, @NotNull ClickInfo info, @NotNull UnaryOperator<ClickResult.Builder> expectedChanges) {
+    public static void assertClick(@NotNull UnaryOperator<ClickResult.Builder> initialChanges, @NotNull Click.Info info, @NotNull UnaryOperator<ClickResult.Builder> expectedChanges) {
         var player = createPlayer();
         var inventory = createInventory();
 
@@ -56,7 +56,7 @@ public class ClickUtils {
         assertEquals(expectedChanges.apply(ClickResult.builder(player, inventory)).build(), changes);
     }
 
-    public static void assertPlayerClick(@NotNull UnaryOperator<ClickResult.Builder> initialChanges, @NotNull ClickInfo info, @NotNull UnaryOperator<ClickResult.Builder> expectedChanges) {
+    public static void assertPlayerClick(@NotNull UnaryOperator<ClickResult.Builder> initialChanges, @NotNull Click.Info info, @NotNull UnaryOperator<ClickResult.Builder> expectedChanges) {
         var player = createPlayer();
         var inventory = player.getInventory();
 
@@ -65,15 +65,15 @@ public class ClickUtils {
         assertEquals(expectedChanges.apply(ClickResult.builder(player, inventory)).build(), changes);
     }
 
-    public static void assertProcessed(@NotNull ClickPreprocessor preprocessor, @NotNull Player player, @Nullable ClickInfo info, @NotNull ClientClickWindowPacket packet) {
+    public static void assertProcessed(@NotNull ClickPreprocessor preprocessor, @NotNull Player player, @Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {
         assertEquals(info, preprocessor.process(player, packet));
     }
 
-    public static void assertProcessed(@NotNull Player player, @Nullable ClickInfo info, @NotNull ClientClickWindowPacket packet) {
+    public static void assertProcessed(@NotNull Player player, @Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {
         assertProcessed(new ClickPreprocessor(createInventory()), player, info, packet);
     }
 
-    public static void assertProcessed(@Nullable ClickInfo info, @NotNull ClientClickWindowPacket packet) {
+    public static void assertProcessed(@Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {
         assertProcessed(createPlayer(), info, packet);
     }
 

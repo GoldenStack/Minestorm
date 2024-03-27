@@ -1,7 +1,7 @@
 package net.minestom.server.inventory.click.type;
 
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.inventory.click.ClickInfo;
+import net.minestom.server.inventory.click.Click;
 import net.minestom.server.inventory.click.ClickResult;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -17,15 +17,16 @@ public class InventoryDropCursorTest {
 
     @Test
     public void testNoChanges() {
-        assertClick(builder -> builder, new ClickInfo.DropCursor(false), builder -> builder);
-        assertClick(builder -> builder, new ClickInfo.DropCursor(true), builder -> builder);
+        assertClick(builder -> builder, new Click.Info.LeftDropCursor(), builder -> builder);
+        assertClick(builder -> builder, new Click.Info.MiddleDropCursor(), builder -> builder);
+        assertClick(builder -> builder, new Click.Info.RightDropCursor(), builder -> builder);
     }
 
     @Test
     public void testDropEntireStack() {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.STONE, 32)),
-                new ClickInfo.DropCursor(true),
+                new Click.Info.LeftDropCursor(),
                 builder -> builder.cursor(ItemStack.AIR).sideEffects(new ClickResult.SideEffects.DropFromPlayer(ItemStack.of(Material.STONE, 32)))
         );
     }
@@ -34,8 +35,17 @@ public class InventoryDropCursorTest {
     public void testDropSingleItem() {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.STONE, 32)),
-                new ClickInfo.DropCursor(false),
+                new Click.Info.RightDropCursor(),
                 builder -> builder.cursor(ItemStack.of(Material.STONE, 31)).sideEffects(new ClickResult.SideEffects.DropFromPlayer(ItemStack.of(Material.STONE, 1)))
+        );
+    }
+
+    @Test
+    public void testMiddleClickNoop() {
+        assertClick(
+                builder -> builder.cursor(ItemStack.of(Material.STONE, 32)),
+                new Click.Info.MiddleDropCursor(),
+                builder -> builder
         );
     }
 
