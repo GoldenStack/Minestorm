@@ -1,7 +1,5 @@
 package net.minestom.server.utils.inventory;
 
-import net.minestom.server.inventory.Inventory;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Minestom uses different slot IDs for player inventories as the Minecraft protocol uses a strange system (e.g. the

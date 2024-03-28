@@ -3,7 +3,6 @@ package net.minestom.server.inventory;
 import net.minestom.server.Viewable;
 import net.minestom.server.entity.Player;
 import net.minestom.server.inventory.click.Click;
-import net.minestom.server.inventory.click.ClickPreprocessor;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.tag.Taggable;
 import org.jetbrains.annotations.ApiStatus;
@@ -63,7 +62,7 @@ public sealed interface Inventory extends Taggable, Viewable permits InventoryIm
      * @return the click preprocessor
      */
     @ApiStatus.Internal
-    @NotNull ClickPreprocessor getClickPreprocessor();
+    @NotNull Click.Preprocessor preprocessor();
 
     /**
      * Gets all the {@link ItemStack} in the inventory.

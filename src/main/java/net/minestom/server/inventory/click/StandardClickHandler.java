@@ -193,7 +193,7 @@ public class StandardClickHandler implements ClickHandler {
         if (cursor.isAir()) return builder.build(); // Do nothing
 
         return builder.cursor(ItemStack.AIR)
-                .sideEffects(new Click.Result.SideEffects.DropFromPlayer(cursor))
+                .sideEffects(new Click.Result.SideEffect.DropFromPlayer(cursor))
                 .build();
     }
 
@@ -211,7 +211,7 @@ public class StandardClickHandler implements ClickHandler {
         var droppedItem = RULE.apply(cursor, 1);
         var newCursor = RULE.apply(cursor, count -> count - 1);
         return builder.cursor(newCursor)
-                .sideEffects(new Click.Result.SideEffects.DropFromPlayer(droppedItem))
+                .sideEffects(new Click.Result.SideEffect.DropFromPlayer(droppedItem))
                 .build();
     }
 
@@ -222,13 +222,13 @@ public class StandardClickHandler implements ClickHandler {
 
         if (info.all()) { // Drop everything
             return builder.set(info.slot(), ItemStack.AIR)
-                    .sideEffects(new Click.Result.SideEffects.DropFromPlayer(item))
+                    .sideEffects(new Click.Result.SideEffect.DropFromPlayer(item))
                     .build();
         } else { // Drop one, and the item must have at least one count
             var droppedItem = RULE.apply(item, 1);
             var newItem = RULE.apply(item, count -> count - 1);
             return builder.set(info.slot(), newItem)
-                    .sideEffects(new Click.Result.SideEffects.DropFromPlayer(droppedItem))
+                    .sideEffects(new Click.Result.SideEffect.DropFromPlayer(droppedItem))
                     .build();
         }
     }
@@ -268,7 +268,7 @@ public class StandardClickHandler implements ClickHandler {
 
     @Override
     public @NotNull Click.Result creativeDropItem(@NotNull Click.Info.CreativeDropItem info, @NotNull Click.Result.Builder builder) {
-        return builder.sideEffects(new Click.Result.SideEffects.DropFromPlayer(info.item())).build();
+        return builder.sideEffects(new Click.Result.SideEffect.DropFromPlayer(info.item())).build();
     }
 
 }

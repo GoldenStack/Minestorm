@@ -28,8 +28,8 @@ public class ClickUtils {
         return new ContainerInventory(TYPE, "TestInventory");
     }
 
-    public static @NotNull ClickPreprocessor createPreprocessor() {
-        return new ClickPreprocessor(createInventory());
+    public static @NotNull Click.Preprocessor createPreprocessor() {
+        return new Click.Preprocessor(createInventory());
     }
 
     public static @NotNull Player createPlayer() {
@@ -65,12 +65,12 @@ public class ClickUtils {
         assertEquals(expectedChanges.apply(Click.Result.builder(inventory, player)).build(), changes);
     }
 
-    public static void assertProcessed(@NotNull ClickPreprocessor preprocessor, @NotNull Player player, @Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {
+    public static void assertProcessed(@NotNull Click.Preprocessor preprocessor, @NotNull Player player, @Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {
         assertEquals(info, preprocessor.process(player, packet));
     }
 
     public static void assertProcessed(@NotNull Player player, @Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {
-        assertProcessed(new ClickPreprocessor(createInventory()), player, info, packet);
+        assertProcessed(new Click.Preprocessor(createInventory()), player, info, packet);
     }
 
     public static void assertProcessed(@Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {

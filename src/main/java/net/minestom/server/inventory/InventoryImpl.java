@@ -29,7 +29,7 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
     private final int size;
     protected final ItemStack[] itemStacks;
 
-    protected final ClickPreprocessor clickPreprocessor = new ClickPreprocessor(this);
+    protected final Click.Preprocessor preprocessor = new Click.Preprocessor(this);
 
     private final TagHandler tagHandler = TagHandler.newHandler();
 
@@ -65,8 +65,8 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
     }
 
     @Override
-    public @NotNull ClickPreprocessor getClickPreprocessor() {
-        return clickPreprocessor;
+    public @NotNull Click.Preprocessor preprocessor() {
+        return preprocessor;
     }
 
     @Override
@@ -96,7 +96,7 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
             }
         }
 
-        getClickPreprocessor().clearCache(player);
+        preprocessor().clearCache(player);
         if (player.didCloseInventory()) {
             player.UNSAFE_changeDidCloseInventory(false);
         } else {
