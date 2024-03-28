@@ -1,6 +1,5 @@
 package net.minestom.server.inventory.type;
 
-import it.unimi.dsi.fastutil.ints.IntIterators;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.entity.Player;
 import net.minestom.server.inventory.ContainerInventory;
@@ -10,6 +9,8 @@ import net.minestom.server.inventory.PlayerInventory;
 import net.minestom.server.inventory.click.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.stream.IntStream;
 
 public class FurnaceInventory extends ContainerInventory {
 
@@ -24,17 +25,17 @@ public class FurnaceInventory extends ContainerInventory {
             (builder, item, slot) -> {
                 int size = builder.clickedSize();
                 if (slot < size) {
-                    return PlayerInventory.getInnerShiftClickSlots(builder, item, slot);
+                    return PlayerInventory.getInnerShiftClickSlots(builder);
                 } else if (slot < size + 27) {
-                    return IntIterators.pour(IntIterators.fromTo(size + 27, size + 36));
+                    return IntStream.range(27, 36).map(i -> i + size);
                 } else {
-                    return IntIterators.pour(IntIterators.fromTo(size, size + 27));
+                    return IntStream.range(0, 27).map(i -> i + size);
                 }
             },
-            (builder, item, slot) -> IntIterators.pour(IntIterators.concat(
-                    IntIterators.fromTo(0, builder.clickedSize()),
-                    PlayerInventory.getInnerDoubleClickSlots(builder, item, slot).iterator()
-            )));
+            (builder, item, slot) -> IntStream.concat(
+                    IntStream.range(0, builder.clickedSize()),
+                    PlayerInventory.getInnerDoubleClickSlots(builder)
+            ));
 
     private short remainingFuelTick;
     private short maximumFuelBurnTime;

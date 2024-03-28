@@ -1,9 +1,5 @@
 package net.minestom.server.inventory;
 
-import it.unimi.dsi.fastutil.ints.IntArrays;
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntIterators;
-import it.unimi.dsi.fastutil.ints.IntList;
 import net.minestom.server.entity.EquipmentSlot;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
@@ -17,7 +13,11 @@ import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static net.minestom.server.utils.inventory.PlayerInventoryUtils.*;
 
@@ -28,46 +28,46 @@ public non-sealed class PlayerInventory extends InventoryImpl {
 
     public static final @NotNull ClickHandler CLICK_HANDLER = new StandardClickHandler(
             (builder, item, slot) -> {
-                IntIterator base = IntIterators.EMPTY_ITERATOR;
+                List<Integer> slots = new ArrayList<>();
 
                 var equipmentSlot = item.material().registry().equipmentSlot();
                 if (equipmentSlot != null && slot != equipmentSlot.armorSlot()) {
-                    base = IntIterators.concat(base, IntIterators.singleton(equipmentSlot.armorSlot()));
+                    slots.add(equipmentSlot.armorSlot());
                 }
 
                 if (item.material() == Material.SHIELD && slot != OFF_HAND_SLOT) {
-                    base = IntIterators.concat(base, IntIterators.singleton(OFF_HAND_SLOT));
+                    slots.add(OFF_HAND_SLOT);
                 }
 
                 if (slot < 9 || slot > 35) {
-                    base = IntIterators.concat(base, IntIterators.fromTo(9, 36));
+                    IntStream.range(9, 36).forEach(slots::add);
                 }
 
                 if (slot < 0 || slot > 8) {
-                    base = IntIterators.concat(base, IntIterators.fromTo(0, 9));
+                    IntStream.range(0, 9).forEach(slots::add);
                 }
 
                 if (slot == CRAFT_RESULT) {
-                    base = IntIterators.wrap(IntArrays.reverse(IntIterators.unwrap(base)));
+                    Collections.reverse(slots);
                 }
 
-                return IntIterators.pour(base);
+                return slots.stream().mapToInt(i -> i);
             },
-            (builder, item, slot) -> IntIterators.pour(IntIterators.concat(
-                    IntIterators.fromTo(CRAFT_SLOT_1, CRAFT_SLOT_4 + 1), // 1-4
-                    IntIterators.fromTo(HELMET_SLOT, BOOTS_SLOT + 1), // 5-8
-                    IntIterators.fromTo(9, 36), // 9-35
-                    IntIterators.fromTo(0, 9), // 36-44
-                    IntIterators.singleton(OFF_HAND_SLOT) // 45
-            ))
+            (builder, item, slot) -> Stream.of(
+                    IntStream.range(CRAFT_SLOT_1, CRAFT_SLOT_4 + 1), // 1-4
+                    IntStream.range(HELMET_SLOT, BOOTS_SLOT + 1), // 5-8
+                    IntStream.range(9, 36), // 9-35
+                    IntStream.range(0, 9), // 36-44
+                    IntStream.of(OFF_HAND_SLOT) // 45
+            ).flatMapToInt(i -> i)
     );
 
-    public static @NotNull IntList getInnerShiftClickSlots(@NotNull Click.Result.Builder builder, @NotNull ItemStack item, int slot) {
-        return IntIterators.pour(IntIterators.fromTo(builder.clickedSize(), builder.clickedSize() + 36));
+    public static @NotNull IntStream getInnerShiftClickSlots(@NotNull Click.Result.Builder builder) {
+        return IntStream.range(0, 36).map(i -> i + builder.clickedSize());
     }
 
-    public static @NotNull IntList getInnerDoubleClickSlots(@NotNull Click.Result.Builder builder, @NotNull ItemStack item, int slot) {
-        return IntIterators.pour(IntIterators.fromTo(builder.clickedSize(), builder.clickedSize() + 36));
+    public static @NotNull IntStream getInnerDoubleClickSlots(@NotNull Click.Result.Builder builder) {
+        return IntStream.range(0, 36).map(i -> i + builder.clickedSize());
     }
 
     private static int getSlotIndex(@NotNull EquipmentSlot slot, int heldSlot) {
@@ -89,18 +89,18 @@ public non-sealed class PlayerInventory extends InventoryImpl {
         };
     }
 
-    private static final IntList FILL_ADD_SLOTS = IntIterators.pour(IntIterators.concat(
-        IntIterators.singleton(OFF_HAND_SLOT),
-        IntIterators.fromTo(0, 36)
-    ));
+    private static final List<Integer> FILL_ADD_SLOTS = IntStream.concat(
+            IntStream.of(OFF_HAND_SLOT),
+            IntStream.range(0, 36)
+    ).boxed().toList();
 
-    private static final IntList AIR_ADD_SLOTS = IntIterators.pour(IntIterators.fromTo(0, 36));
+    private static final List<Integer> AIR_ADD_SLOTS = IntStream.range(0, 36).boxed().toList();
 
-    private static final IntList TAKE_SLOTS = IntIterators.pour(IntIterators.concat(
-        IntIterators.fromTo(0, 36),
-        IntIterators.singleton(OFF_HAND_SLOT),
-        IntIterators.fromTo(36, 45)
-    ));
+    private static final List<Integer> TAKE_SLOTS = Stream.of(
+            IntStream.range(0, 36),
+            IntStream.of(OFF_HAND_SLOT),
+            IntStream.range(36, 45)
+    ).flatMapToInt(i -> i).boxed().toList();
 
     private ItemStack cursorItem = ItemStack.AIR;
 

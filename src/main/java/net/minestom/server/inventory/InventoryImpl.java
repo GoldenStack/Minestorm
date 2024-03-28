@@ -1,6 +1,5 @@
 package net.minestom.server.inventory;
 
-import it.unimi.dsi.fastutil.ints.IntIterators;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.inventory.InventoryItemChangeEvent;
@@ -21,6 +20,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.UnaryOperator;
+import java.util.stream.IntStream;
 
 sealed abstract class InventoryImpl implements Inventory permits ContainerInventory, PlayerInventory {
 
@@ -41,12 +41,12 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
 
     public static final @NotNull ClickHandler DEFAULT_HANDLER = new StandardClickHandler(
             (builder, item, slot) -> slot >= builder.clickedSize() ?
-                    IntIterators.pour(IntIterators.fromTo(0, builder.clickedSize())) :
-                    PlayerInventory.getInnerShiftClickSlots(builder, item, slot),
-            (builder, item, slot) -> IntIterators.pour(IntIterators.concat(
-                    IntIterators.fromTo(0, builder.clickedSize()),
-                    PlayerInventory.getInnerDoubleClickSlots(builder, item, slot).iterator()
-            )));
+                    IntStream.range(0, builder.clickedSize()) :
+                    PlayerInventory.getInnerShiftClickSlots(builder),
+            (builder, item, slot) -> IntStream.concat(
+                    IntStream.range(0, builder.clickedSize()),
+                    PlayerInventory.getInnerDoubleClickSlots(builder)
+            ));
 
     protected InventoryImpl(int size) {
         this.size = size;
@@ -256,7 +256,8 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
 
     @Override
     public <T> @NotNull T addItemStack(@NotNull ItemStack itemStack, @NotNull TransactionOption<T> option) {
-        return processItemStack(itemStack, TransactionType.add(IntIterators.pour(IntIterators.fromTo(0, getSize())), IntIterators.pour(IntIterators.fromTo(0, getSize()))), option);
+        List<Integer> slots = IntStream.range(0, getSize()).boxed().toList();
+        return processItemStack(itemStack, TransactionType.add(slots, slots), option);
     }
 
     @Override
@@ -282,7 +283,7 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
 
     @Override
     public <T> @NotNull T takeItemStack(@NotNull ItemStack itemStack, @NotNull TransactionOption<T> option) {
-        return processItemStack(itemStack, TransactionType.take(IntIterators.pour(IntIterators.fromTo(0, getSize()))), option);
+        return processItemStack(itemStack, TransactionType.take(IntStream.range(0, getSize()).boxed().toList()), option);
     }
 
     @Override

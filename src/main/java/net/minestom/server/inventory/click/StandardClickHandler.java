@@ -1,7 +1,6 @@
 package net.minestom.server.inventory.click;
 
 import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.ints.*;
 import net.minestom.server.inventory.TransactionOperator;
 import net.minestom.server.inventory.TransactionType;
 import net.minestom.server.item.ItemStack;
@@ -9,7 +8,9 @@ import net.minestom.server.item.StackingRule;
 import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Provides standard implementations of most click functions.
@@ -32,7 +33,11 @@ public class StandardClickHandler implements ClickHandler {
          * @param slot the slot of the clicked item
          * @return the list of slots, in order of priority, to be used for this operation
          */
-        @NotNull IntList get(@NotNull Click.Result.Builder builder, @NotNull ItemStack item, int slot);
+        @NotNull IntStream get(@NotNull Click.Result.Builder builder, @NotNull ItemStack item, int slot);
+
+        default @NotNull List<Integer> getList(@NotNull Click.Result.Builder builder, @NotNull ItemStack item, int slot) {
+            return new ArrayList<>(get(builder, item, slot).boxed().toList());
+        }
 
     }
 
@@ -104,7 +109,7 @@ public class StandardClickHandler implements ClickHandler {
     public @NotNull Click.Result shift(int slot, @NotNull Click.Result.Builder builder) {
         ItemStack clicked = builder.get(slot);
 
-        IntList slots = shiftClickSlots.get(builder, clicked, slot);
+        List<Integer> slots = shiftClickSlots.getList(builder, clicked, slot);
         slots.removeIf(i -> i == slot);
 
         ItemStack result = TransactionType.add(slots, slots).process(clicked, builder);
@@ -131,7 +136,7 @@ public class StandardClickHandler implements ClickHandler {
         var cursor = builder.getCursorItem();
         if (cursor.isAir()) return builder.build();
 
-        var slots = doubleClickSlots.get(builder, cursor, info.slot());
+        var slots = doubleClickSlots.getList(builder, cursor, info.slot());
 
         var unstacked = TransactionType.general(TransactionOperator.filter(TransactionOperator.STACK_RIGHT, (first, second) -> RULE.getAmount(first) < RULE.getAmount(first)), slots);
         var stacked = TransactionType.general(TransactionOperator.filter(TransactionOperator.STACK_RIGHT, (first, second) -> RULE.getAmount(first) == RULE.getAmount(first)), slots);
