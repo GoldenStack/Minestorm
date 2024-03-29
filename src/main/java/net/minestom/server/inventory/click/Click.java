@@ -65,7 +65,7 @@ public final class Click {
 
         private final Map<Integer, List<Integer>> leftDraggingMap = new HashMap<>();
         private final Map<Integer, List<Integer>> rightDraggingMap = new HashMap<>();
-        private final Map<Integer, List<Integer>> creativeDragMap = new HashMap<>();
+        private final Map<Integer, List<Integer>> middleDraggingMap = new HashMap<>();
 
         public Preprocessor(int size, boolean isPlayerInventory) {
             this.size = size;
@@ -79,7 +79,7 @@ public final class Click {
         public void clearCache(int id) {
             leftDraggingMap.remove(id);
             rightDraggingMap.remove(id);
-            creativeDragMap.remove(id);
+            middleDraggingMap.remove(id);
         }
 
         private boolean validate(int slot) {
@@ -168,7 +168,7 @@ public final class Click {
                         var list = rightDraggingMap.remove(playerId);
                         yield new Info.RightDrag(list == null ? List.of() : List.copyOf(list));
                     } else if (button == 10) {
-                        var list = creativeDragMap.remove(playerId);
+                        var list = middleDraggingMap.remove(playerId);
                         yield new Info.MiddleDrag(list == null ? List.of() : List.copyOf(list));
                     }
 
@@ -186,11 +186,11 @@ public final class Click {
                     switch (button) {
                         case 0 -> leftDraggingMap.remove(playerId);
                         case 4 -> rightDraggingMap.remove(playerId);
-                        case 8 -> creativeDragMap.remove(playerId);
+                        case 8 -> middleDraggingMap.remove(playerId);
 
                         case 1 -> leftDraggingMap.compute(playerId, addItem);
                         case 5 -> rightDraggingMap.compute(playerId, addItem);
-                        case 9 -> creativeDragMap.compute(playerId, addItem);
+                        case 9 -> middleDraggingMap.compute(playerId, addItem);
                     }
 
                     yield null;

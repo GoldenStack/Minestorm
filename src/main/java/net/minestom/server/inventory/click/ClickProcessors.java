@@ -153,60 +153,43 @@ public class ClickProcessors {
      * @param doubleClickSlots the double click slot supplier
      */
     public static @NotNull Click.Processor standard(@NotNull SlotSuggestor shiftClickSlots, @NotNull SlotSuggestor doubleClickSlots) {
-        // Ugly solution, but temporary
         return (inventory, player, info) -> {
             Click.Result.Builder builder = Click.Result.builder(inventory, player);
-            if (info instanceof Click.Info.Left left) {
-                return leftClick(left.slot(), builder);
-            } else if (info instanceof Click.Info.Right right) {
-                return rightClick(right.slot(), builder);
-            } else if (info instanceof Click.Info.Middle middle) {
-                return middleClick(middle.slot(), builder);
-            } else if (info instanceof Click.Info.LeftShift leftShift) {
-                List<Integer> slots = shiftClickSlots.getList(builder, builder.get(leftShift.slot()), leftShift.slot());
-                return shiftClick(leftShift.slot(), slots, builder);
-            } else if (info instanceof Click.Info.RightShift rightShift) {
-                List<Integer> slots = shiftClickSlots.getList(builder, builder.get(rightShift.slot()), rightShift.slot());
-                return shiftClick(rightShift.slot(), slots, builder);
-            } else if (info instanceof Click.Info.Double doubleClick) {
-                List<Integer> slots = doubleClickSlots.getList(builder, builder.get(doubleClick.slot()), doubleClick.slot());
-                return doubleClick(slots, builder);
-            } else if (info instanceof Click.Info.LeftDrag drag) {
-                int cursorAmount = RULE.getAmount(builder.getCursorItem());
-                int amount = (int) Math.floor(cursorAmount / (double) drag.slots().size());
-                return dragClick(amount, drag.slots(), builder);
-            } else if (info instanceof Click.Info.RightDrag drag) {
-                return dragClick(1, drag.slots(), builder);
-            } else if (info instanceof Click.Info.MiddleDrag drag) {
-                return middleDragClick(drag.slots(), builder);
-            } else if (info instanceof Click.Info.DropSlot drop) {
-                var item = builder.get(drop.slot());
-                return dropFromSlot(drop.slot(), drop.all() ? RULE.getAmount(item) : 1, builder);
-            } else if (info instanceof Click.Info.LeftDropCursor) {
-                return dropFromCursor(builder.getCursorItem().amount(), builder);
-            } else if (info instanceof Click.Info.MiddleDropCursor) {
-                return builder.build();
-            } else if (info instanceof Click.Info.RightDropCursor) {
-                return dropFromCursor(1, builder);
-            } else if (info instanceof Click.Info.HotbarSwap swap) {
-                var hotbarItem = builder.getPlayer(swap.hotbarSlot());
-                var selectedItem = builder.get(swap.clickedSlot());
-                if (hotbarItem.equals(selectedItem)) return builder.build();
+            return switch (info) {
+                case Click.Info.Left(int slot) -> leftClick(slot, builder);
+                case Click.Info.Right(int slot) -> rightClick(slot, builder);
+                case Click.Info.Middle(int slot) -> middleClick(slot, builder);
+                case Click.Info.LeftShift(int slot) -> shiftClick(slot, shiftClickSlots.getList(builder, builder.get(slot), slot), builder);
+                case Click.Info.RightShift(int slot) -> shiftClick(slot, shiftClickSlots.getList(builder, builder.get(slot), slot), builder);
+                case Click.Info.Double(int slot) -> doubleClick(doubleClickSlots.getList(builder, builder.get(slot), slot), builder);
+                case Click.Info.LeftDrag(List<Integer> slots) -> {
+                    int cursorAmount = RULE.getAmount(builder.getCursorItem());
+                    int amount = (int) Math.floor(cursorAmount / (double) slots.size());
+                    yield dragClick(amount, slots, builder);
+                }
+                case Click.Info.RightDrag(List<Integer> slots) -> dragClick(1, slots, builder);
+                case Click.Info.MiddleDrag(List<Integer> slots) -> middleDragClick(slots, builder);
+                case Click.Info.DropSlot(int slot, boolean all) -> dropFromSlot(slot, all ? RULE.getAmount(builder.get(slot)) : 1, builder);
+                case Click.Info.LeftDropCursor() -> dropFromCursor(builder.getCursorItem().amount(), builder);
+                case Click.Info.RightDropCursor() -> dropFromCursor(1, builder);
+                case Click.Info.MiddleDropCursor() -> builder.build();
+                case Click.Info.HotbarSwap(int hotbarSlot, int clickedSlot) -> {
+                    var hotbarItem = builder.getPlayer(hotbarSlot);
+                    var selectedItem = builder.get(clickedSlot);
+                    if (hotbarItem.equals(selectedItem)) yield builder.build();
 
-                return builder.setPlayer(swap.hotbarSlot(), selectedItem).set(swap.clickedSlot(), hotbarItem).build();
-            } else if (info instanceof Click.Info.OffhandSwap swap) {
-                var offhandItem = builder.getPlayer(PlayerInventoryUtils.OFF_HAND_SLOT);
-                var selectedItem = builder.get(swap.slot());
-                if (offhandItem.equals(selectedItem)) return builder.build();
+                    yield builder.setPlayer(hotbarSlot, selectedItem).set(clickedSlot, hotbarItem).build();
+                }
+                case Click.Info.OffhandSwap(int slot) -> {
+                    var offhandItem = builder.getPlayer(PlayerInventoryUtils.OFF_HAND_SLOT);
+                    var selectedItem = builder.get(slot);
+                    if (offhandItem.equals(selectedItem)) yield builder.build();
 
-                return builder.setPlayer(PlayerInventoryUtils.OFF_HAND_SLOT, selectedItem).set(swap.slot(), offhandItem).build();
-            } else if (info instanceof Click.Info.CreativeSetItem set) {
-                return builder.set(set.slot(), set.item()).build();
-            } else if (info instanceof Click.Info.CreativeDropItem drop) {
-                return builder.sideEffects(new Click.SideEffect.DropFromPlayer(drop.item())).build();
-            } else {
-                throw new IllegalArgumentException("Unknown click info " + info);
-            }
+                    yield builder.setPlayer(PlayerInventoryUtils.OFF_HAND_SLOT, selectedItem).set(slot, offhandItem).build();
+                }
+                case Click.Info.CreativeSetItem(int slot, ItemStack item) -> builder.set(slot, item).build();
+                case Click.Info.CreativeDropItem(ItemStack item) -> builder.sideEffects(new Click.SideEffect.DropFromPlayer(item)).build();
+            };
         };
     }
 

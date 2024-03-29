@@ -29,7 +29,7 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
     private final int size;
     protected final ItemStack[] itemStacks;
 
-    protected final Click.Preprocessor preprocessor = new Click.Preprocessor(this);
+    protected final Click.Preprocessor preprocessor;
 
     private final TagHandler tagHandler = TagHandler.newHandler();
 
@@ -52,6 +52,8 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
         this.size = size;
         this.itemStacks = new ItemStack[size];
         Arrays.fill(itemStacks, ItemStack.AIR);
+
+        preprocessor = new Click.Preprocessor(this);
     }
 
     @Override
