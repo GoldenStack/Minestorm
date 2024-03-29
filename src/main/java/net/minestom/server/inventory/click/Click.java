@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 public final class Click {
 
@@ -56,50 +56,34 @@ public final class Click {
     }
 
     /**
-     * Preprocesses click packets for an inventory, turning them into {@link Info} instances for further processing.
+     * Preprocesses click packets, turning them into {@link Info} instances for further processing.
      */
     public static final class Preprocessor {
 
-        private final int size;
-        private final boolean isPlayerInventory;
+        private final List<Integer> leftDrag = new ArrayList<>();
+        private final List<Integer> rightDrag = new ArrayList<>();
+        private final List<Integer> middleDrag = new ArrayList<>();
 
-        private final Map<Integer, List<Integer>> leftDraggingMap = new HashMap<>();
-        private final Map<Integer, List<Integer>> rightDraggingMap = new HashMap<>();
-        private final Map<Integer, List<Integer>> middleDraggingMap = new HashMap<>();
-
-        public Preprocessor(int size, boolean isPlayerInventory) {
-            this.size = size;
-            this.isPlayerInventory = isPlayerInventory;
-        }
-
-        public Preprocessor(@NotNull Inventory inventory) {
-            this(inventory.getSize(), inventory instanceof PlayerInventory);
-        }
-
-        public void clearCache(int id) {
-            leftDraggingMap.remove(id);
-            rightDraggingMap.remove(id);
-            middleDraggingMap.remove(id);
-        }
-
-        private boolean validate(int slot) {
-            return slot >= 0 && slot < size + (isPlayerInventory ? 0 : PlayerInventoryUtils.INNER_SIZE);
+        public void clearCache() {
+            leftDrag.clear();
+            rightDrag.clear();
+            middleDrag.clear();
         }
 
         /**
          * Processes the provided click packet, turning it into a {@link Info}.
-         * This will do simple verification of the packet before sending it to {@link #process(int, ClientClickWindowPacket.ClickType, int, byte)}.
+         * This will do simple verification of the packet before sending it to {@link #process(ClientClickWindowPacket.ClickType, int, byte, int)}.
          *
-         * @param player the player clicking
          * @param packet the raw click packet
+         * @param isCreative whether or not the player is in creative mode (used for ignoring some actions)
          * @return the information about the click, or nothing if there was no immediately usable information
          */
-        public @Nullable Click.Info process(@NotNull Player player, @NotNull ClientClickWindowPacket packet) {
+        public @Nullable Click.Info process(@NotNull ClientClickWindowPacket packet, @NotNull Inventory inventory, boolean isCreative) {
             final int originalSlot = packet.slot();
             final byte button = packet.button();
             final ClientClickWindowPacket.ClickType type = packet.clickType();
 
-            int slot = isPlayerInventory ? PlayerInventoryUtils.protocolToMinestom(originalSlot) : originalSlot;
+            int slot = inventory instanceof PlayerInventory ? PlayerInventoryUtils.protocolToMinestom(originalSlot) : originalSlot;
             if (originalSlot == -999) slot = -999;
 
             boolean creativeRequired = switch (type) {
@@ -108,21 +92,23 @@ public final class Click {
                 default -> false;
             };
 
-            if (creativeRequired && !player.isCreative()) return null;
+            if (creativeRequired && !isCreative) return null;
 
-            return process(player.getEntityId(), type, slot, button);
+            int maxSize = inventory.getSize() + (inventory instanceof PlayerInventory ? 0 : PlayerInventoryUtils.INNER_SIZE);
+            return process(type, slot, button, maxSize);
         }
 
         /**
          * Processes a packet into click info.
          *
-         * @param playerId the player id to use
          * @param type     the type of the click
          * @param slot     the clicked slot
          * @param button   the sent button
          * @return the information about the click, or nothing if there was no immediately usable information
          */
-        public @Nullable Click.Info process(int playerId, @NotNull ClientClickWindowPacket.ClickType type, int slot, byte button) {
+        public @Nullable Click.Info process(@NotNull ClientClickWindowPacket.ClickType type,
+                                            int slot, byte button, int maxSize) {
+            boolean valid = slot >= 0 && slot < maxSize;
             return switch (type) {
                 case PICKUP -> {
                     if (slot == -999) {
@@ -134,7 +120,7 @@ public final class Click {
                         };
                     }
 
-                    if (!validate(slot)) yield null;
+                    if (!valid) yield null;
 
                     yield switch (button) {
                         case 0 -> new Info.Left(slot);
@@ -143,11 +129,11 @@ public final class Click {
                     };
                 }
                 case QUICK_MOVE -> {
-                    if (!validate(slot)) yield null;
+                    if (!valid) yield null;
                     yield button == 0 ? new Info.LeftShift(slot) : new Info.RightShift(slot);
                 }
                 case SWAP -> {
-                    if (!validate(slot)) {
+                    if (!valid) {
                         yield null;
                     } else if (button >= 0 && button < 9) {
                         yield new Info.HotbarSwap(button, slot);
@@ -157,45 +143,43 @@ public final class Click {
                         yield null;
                     }
                 }
-                case CLONE -> validate(slot) ? new Info.Middle(slot) : null;
-                case THROW -> validate(slot) ? new Info.DropSlot(slot, button == 1) : null;
+                case CLONE -> valid ? new Info.Middle(slot) : null;
+                case THROW -> valid ? new Info.DropSlot(slot, button == 1) : null;
                 case QUICK_CRAFT -> {
                     // Handle drag finishes
                     if (button == 2) {
-                        var list = leftDraggingMap.remove(playerId);
-                        yield new Info.LeftDrag(list == null ? List.of() : List.copyOf(list));
+                        var list = List.copyOf(leftDrag);
+                        leftDrag.clear();
+                        yield new Info.LeftDrag(list);
                     } else if (button == 6) {
-                        var list = rightDraggingMap.remove(playerId);
-                        yield new Info.RightDrag(list == null ? List.of() : List.copyOf(list));
+                        var list = List.copyOf(rightDrag);
+                        rightDrag.clear();
+                        yield new Info.RightDrag(list);
                     } else if (button == 10) {
-                        var list = middleDraggingMap.remove(playerId);
-                        yield new Info.MiddleDrag(list == null ? List.of() : List.copyOf(list));
+                        var list = List.copyOf(middleDrag);
+                        middleDrag.clear();
+                        yield new Info.MiddleDrag(list);
                     }
 
-                    // Handle intermediate state
-                    BiFunction<Integer, List<Integer>, List<Integer>> addItem = (k, v) -> {
-                        List<Integer> v2 = v != null ? v : new ArrayList<>();
-                        if (validate(slot)) {
-                            if (!v2.contains(slot)) {
-                                v2.add(slot);
-                            }
+                    Consumer<List<Integer>> tryAdd = list -> {
+                        if (valid && !list.contains(slot)) {
+                            list.add(slot);
                         }
-                        return v2;
                     };
 
                     switch (button) {
-                        case 0 -> leftDraggingMap.remove(playerId);
-                        case 4 -> rightDraggingMap.remove(playerId);
-                        case 8 -> middleDraggingMap.remove(playerId);
+                        case 0 -> leftDrag.clear();
+                        case 4 -> rightDrag.clear();
+                        case 8 -> middleDrag.clear();
 
-                        case 1 -> leftDraggingMap.compute(playerId, addItem);
-                        case 5 -> rightDraggingMap.compute(playerId, addItem);
-                        case 9 -> middleDraggingMap.compute(playerId, addItem);
+                        case 1 -> tryAdd.accept(leftDrag);
+                        case 5 -> tryAdd.accept(rightDrag);
+                        case 9 -> tryAdd.accept(middleDrag);
                     }
 
                     yield null;
                 }
-                case PICKUP_ALL -> validate(slot) ? new Info.Double(slot) : null;
+                case PICKUP_ALL -> valid ? new Info.Double(slot) : null;
             };
         }
 

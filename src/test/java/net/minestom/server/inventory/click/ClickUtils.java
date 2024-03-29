@@ -29,7 +29,7 @@ public class ClickUtils {
     }
 
     public static @NotNull Click.Preprocessor createPreprocessor() {
-        return new Click.Preprocessor(createInventory());
+        return new Click.Preprocessor();
     }
 
     public static @NotNull Player createPlayer() {
@@ -66,11 +66,11 @@ public class ClickUtils {
     }
 
     public static void assertProcessed(@NotNull Click.Preprocessor preprocessor, @NotNull Player player, @Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {
-        assertEquals(info, preprocessor.process(player, packet));
+        assertEquals(info, preprocessor.process(packet, createInventory(), player.isCreative()));
     }
 
     public static void assertProcessed(@NotNull Player player, @Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {
-        assertProcessed(new Click.Preprocessor(createInventory()), player, info, packet);
+        assertProcessed(new Click.Preprocessor(), player, info, packet);
     }
 
     public static void assertProcessed(@Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {

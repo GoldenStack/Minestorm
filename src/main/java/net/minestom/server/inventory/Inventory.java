@@ -57,14 +57,6 @@ public sealed interface Inventory extends Taggable, Viewable permits InventoryIm
     @Nullable Click.Result handleClick(@NotNull Player player, @NotNull Click.Info info);
 
     /**
-     * Gets the click preprocessor for this inventory.
-     *
-     * @return the click preprocessor
-     */
-    @ApiStatus.Internal
-    @NotNull Click.Preprocessor preprocessor();
-
-    /**
      * Gets all the {@link ItemStack} in the inventory.
      * <p>
      * Be aware that the returned array does not need to be the original one,

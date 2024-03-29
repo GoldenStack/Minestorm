@@ -20,7 +20,7 @@ public class WindowListener {
         // Prevent some invalid packets
         if (inventory == null || packet.slot() == -1) return;
 
-        var info = inventory.preprocessor().process(player, packet);
+        var info = player.clickPreprocessor().process(packet, inventory, player.isCreative());
         if (info != null) {
             inventory.handleClick(player, info);
         }
