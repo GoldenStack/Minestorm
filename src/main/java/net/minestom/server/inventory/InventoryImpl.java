@@ -39,7 +39,7 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
     protected final Set<Player> viewers = new CopyOnWriteArraySet<>();
     protected final Set<Player> unmodifiableViewers = Collections.unmodifiableSet(viewers);
 
-    public static final @NotNull ClickHandler DEFAULT_HANDLER = new StandardClickHandler(
+    public static final @NotNull Click.Processor DEFAULT_HANDLER = ClickProcessors.standard(
             (builder, item, slot) -> slot >= builder.clickedSize() ?
                     IntStream.range(0, builder.clickedSize()) :
                     PlayerInventory.getInnerShiftClickSlots(builder),
@@ -96,7 +96,7 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
             }
         }
 
-        preprocessor().clearCache(player);
+        preprocessor().clearCache(player.getEntityId());
         if (player.didCloseInventory()) {
             player.UNSAFE_changeDidCloseInventory(false);
         } else {

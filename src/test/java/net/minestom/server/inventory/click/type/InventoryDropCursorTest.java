@@ -26,7 +26,7 @@ public class InventoryDropCursorTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.LeftDropCursor(),
-                builder -> builder.cursor(ItemStack.AIR).sideEffects(new Click.Result.SideEffect.DropFromPlayer(ItemStack.of(Material.STONE, 32)))
+                builder -> builder.cursor(ItemStack.AIR).sideEffects(new Click.SideEffect.DropFromPlayer(ItemStack.of(Material.STONE, 32)))
         );
     }
 
@@ -35,7 +35,7 @@ public class InventoryDropCursorTest {
         assertClick(
                 builder -> builder.cursor(ItemStack.of(Material.STONE, 32)),
                 new Click.Info.RightDropCursor(),
-                builder -> builder.cursor(ItemStack.of(Material.STONE, 31)).sideEffects(new Click.Result.SideEffect.DropFromPlayer(ItemStack.of(Material.STONE, 1)))
+                builder -> builder.cursor(ItemStack.of(Material.STONE, 31)).sideEffects(new Click.SideEffect.DropFromPlayer(ItemStack.of(Material.STONE, 1)))
         );
     }
 

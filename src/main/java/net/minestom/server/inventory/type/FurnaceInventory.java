@@ -21,7 +21,7 @@ public class FurnaceInventory extends ContainerInventory {
      * - Shift clicks in the hotbar go to the storage
      * - Shift clicks in the storage go to the hotbar
      */
-    public static final @NotNull ClickHandler FURNACE_HANDLER = new StandardClickHandler(
+    public static final @NotNull Click.Processor FURNACE_HANDLER = ClickProcessors.standard(
             (builder, item, slot) -> {
                 int size = builder.clickedSize();
                 if (slot < size) {

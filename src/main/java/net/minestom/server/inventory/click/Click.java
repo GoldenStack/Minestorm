@@ -2,6 +2,10 @@ package net.minestom.server.inventory.click;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import net.minestom.server.entity.Player;
+import net.minestom.server.event.EventDispatcher;
+import net.minestom.server.event.inventory.InventoryClickEvent;
+import net.minestom.server.event.inventory.InventoryPostClickEvent;
+import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.PlayerInventory;
 import net.minestom.server.item.ItemStack;
@@ -14,10 +18,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
-public class Click {
+public final class Click {
 
     /**
      * Contains information about a click. These are equal to the packet slot IDs from <a href="https://wiki.vg/Inventory">the Minecraft protocol.</a>.
@@ -60,9 +63,9 @@ public class Click {
         private final int size;
         private final boolean isPlayerInventory;
 
-        private final Map<Player, List<Integer>> leftDraggingMap = new ConcurrentHashMap<>();
-        private final Map<Player, List<Integer>> rightDraggingMap = new ConcurrentHashMap<>();
-        private final Map<Player, List<Integer>> creativeDragMap = new ConcurrentHashMap<>();
+        private final Map<Integer, List<Integer>> leftDraggingMap = new HashMap<>();
+        private final Map<Integer, List<Integer>> rightDraggingMap = new HashMap<>();
+        private final Map<Integer, List<Integer>> creativeDragMap = new HashMap<>();
 
         public Preprocessor(int size, boolean isPlayerInventory) {
             this.size = size;
@@ -73,10 +76,10 @@ public class Click {
             this(inventory.getSize(), inventory instanceof PlayerInventory);
         }
 
-        public void clearCache(@NotNull Player player) {
-            leftDraggingMap.remove(player);
-            rightDraggingMap.remove(player);
-            creativeDragMap.remove(player);
+        public void clearCache(int id) {
+            leftDraggingMap.remove(id);
+            rightDraggingMap.remove(id);
+            creativeDragMap.remove(id);
         }
 
         private boolean validate(int slot) {
@@ -85,6 +88,8 @@ public class Click {
 
         /**
          * Processes the provided click packet, turning it into a {@link Info}.
+         * This will do simple verification of the packet before sending it to {@link #process(int, ClientClickWindowPacket.ClickType, int, byte)}.
+         *
          * @param player the player clicking
          * @param packet the raw click packet
          * @return the information about the click, or nothing if there was no immediately usable information
@@ -92,13 +97,35 @@ public class Click {
         public @Nullable Click.Info process(@NotNull Player player, @NotNull ClientClickWindowPacket packet) {
             final int originalSlot = packet.slot();
             final byte button = packet.button();
-            final ClientClickWindowPacket.ClickType clickType = packet.clickType();
+            final ClientClickWindowPacket.ClickType type = packet.clickType();
 
-            final int slot = isPlayerInventory ? PlayerInventoryUtils.protocolToMinestom(originalSlot) : originalSlot;
+            int slot = isPlayerInventory ? PlayerInventoryUtils.protocolToMinestom(originalSlot) : originalSlot;
+            if (originalSlot == -999) slot = -999;
 
-            return switch (clickType) {
+            boolean creativeRequired = switch (type) {
+                case CLONE -> true;
+                case QUICK_CRAFT -> button == 8 || button == 9 || button == 10;
+                default -> false;
+            };
+
+            if (creativeRequired && !player.isCreative()) return null;
+
+            return process(player.getEntityId(), type, slot, button);
+        }
+
+        /**
+         * Processes a packet into click info.
+         *
+         * @param playerId the player id to use
+         * @param type     the type of the click
+         * @param slot     the clicked slot
+         * @param button   the sent button
+         * @return the information about the click, or nothing if there was no immediately usable information
+         */
+        public @Nullable Click.Info process(int playerId, @NotNull ClientClickWindowPacket.ClickType type, int slot, byte button) {
+            return switch (type) {
                 case PICKUP -> {
-                    if (originalSlot == -999) {
+                    if (slot == -999) {
                         yield switch (button) {
                             case 0 -> new Info.LeftDropCursor();
                             case 1 -> new Info.RightDropCursor();
@@ -109,7 +136,7 @@ public class Click {
 
                     if (!validate(slot)) yield null;
 
-                    yield switch(button) {
+                    yield switch (button) {
                         case 0 -> new Info.Left(slot);
                         case 1 -> new Info.Right(slot);
                         default -> null;
@@ -130,26 +157,23 @@ public class Click {
                         yield null;
                     }
                 }
-                case CLONE -> (player.isCreative() && validate(slot)) ? new Info.Middle(slot) : null;
+                case CLONE -> validate(slot) ? new Info.Middle(slot) : null;
                 case THROW -> validate(slot) ? new Info.DropSlot(slot, button == 1) : null;
                 case QUICK_CRAFT -> {
-                    // Prevent invalid creative actions
-                    if (!player.isCreative() && (button == 8 || button == 9 || button == 10)) yield null;
-
                     // Handle drag finishes
                     if (button == 2) {
-                        var list = leftDraggingMap.remove(player);
+                        var list = leftDraggingMap.remove(playerId);
                         yield new Info.LeftDrag(list == null ? List.of() : List.copyOf(list));
                     } else if (button == 6) {
-                        var list = rightDraggingMap.remove(player);
+                        var list = rightDraggingMap.remove(playerId);
                         yield new Info.RightDrag(list == null ? List.of() : List.copyOf(list));
                     } else if (button == 10) {
-                        var list = creativeDragMap.remove(player);
+                        var list = creativeDragMap.remove(playerId);
                         yield new Info.MiddleDrag(list == null ? List.of() : List.copyOf(list));
                     }
 
                     // Handle intermediate state
-                    BiFunction<Player, List<Integer>, List<Integer>> addItem = (k, v) -> {
+                    BiFunction<Integer, List<Integer>, List<Integer>> addItem = (k, v) -> {
                         List<Integer> v2 = v != null ? v : new ArrayList<>();
                         if (validate(slot)) {
                             if (!v2.contains(slot)) {
@@ -160,13 +184,13 @@ public class Click {
                     };
 
                     switch (button) {
-                        case 0 -> leftDraggingMap.remove(player);
-                        case 4 -> rightDraggingMap.remove(player);
-                        case 8 -> creativeDragMap.remove(player);
+                        case 0 -> leftDraggingMap.remove(playerId);
+                        case 4 -> rightDraggingMap.remove(playerId);
+                        case 8 -> creativeDragMap.remove(playerId);
 
-                        case 1 -> leftDraggingMap.compute(player, addItem);
-                        case 5 -> rightDraggingMap.compute(player, addItem);
-                        case 9 -> creativeDragMap.compute(player, addItem);
+                        case 1 -> leftDraggingMap.compute(playerId, addItem);
+                        case 5 -> rightDraggingMap.compute(playerId, addItem);
+                        case 9 -> creativeDragMap.compute(playerId, addItem);
                     }
 
                     yield null;
@@ -178,6 +202,69 @@ public class Click {
     }
 
     /**
+     * Handles different types of clicks by players in an inventory.
+     * The inventory is provided to this handler in the case of handlers that don't have internal state and may manage
+     * multiple inventories, but it's also possible to store the inventory yourself and control usages of it.
+     */
+    public interface Processor {
+
+        /**
+         * Processes a click, returning a result. This will call events for the click.
+         * @param inventory the clicked inventory (could be a player inventory)
+         * @param player the player who clicked
+         * @param info the click info describing the click
+         * @return the click result, or null if the click did not occur
+         */
+        default @Nullable Click.Result handleClick(@NotNull Inventory inventory, @NotNull Player player, @NotNull Click.Info info) {
+            InventoryPreClickEvent preClickEvent = new InventoryPreClickEvent(player.getInventory(), inventory, player, info);
+            EventDispatcher.call(preClickEvent);
+
+            Info newInfo = preClickEvent.getClickInfo();
+
+            if (!preClickEvent.isCancelled()) {
+                Result changes = processClick(inventory, player, newInfo);
+
+                InventoryClickEvent clickEvent = new InventoryClickEvent(player.getInventory(), inventory, player, newInfo, changes);
+                EventDispatcher.call(clickEvent);
+
+                if (!clickEvent.isCancelled()) {
+                    Result newChanges = clickEvent.getChanges();
+
+                    Result.handle(newChanges, player, inventory);
+
+                    var postClickEvent = new InventoryPostClickEvent(player, inventory, newInfo, newChanges);
+                    EventDispatcher.call(postClickEvent);
+
+                    if (!info.equals(newInfo) || !changes.equals(newChanges)) {
+                        inventory.update(player);
+                        if (inventory != player.getInventory()) {
+                            player.getInventory().update(player);
+                        }
+                    }
+
+                    return newChanges;
+                }
+            }
+
+            inventory.update(player);
+            if (inventory != player.getInventory()) {
+                player.getInventory().update(player);
+            }
+            return null;
+        }
+
+        /**
+         * Processes a click, returning a result. This should be a pure function with no side effects.
+         * @param inventory the clicked inventory (could be a player inventory)
+         * @param player the player who clicked
+         * @param info the click info describing the click
+         * @return the click result
+         */
+        @NotNull Click.Result processClick(@NotNull Inventory inventory, @NotNull Player player, @NotNull Click.Info info);
+
+    }
+
+    /**
      * Stores changes that occurred or will occur as the result of a click.
      * @param changes the map of changes that will occur to the inventory
      * @param playerInventoryChanges the map of changes that will occur to the player inventory
@@ -185,11 +272,31 @@ public class Click {
      * @param sideEffects the side effects of this click
      */
     public record Result(@NotNull Map<Integer, ItemStack> changes, @NotNull Map<Integer, ItemStack> playerInventoryChanges,
-                         @Nullable ItemStack newCursorItem, @Nullable Click.Result.SideEffect sideEffects) {
+                         @Nullable ItemStack newCursorItem, @Nullable Click.SideEffect sideEffects) {
 
         public Result {
             changes = Map.copyOf(changes);
             playerInventoryChanges = Map.copyOf(playerInventoryChanges);
+        }
+
+        static void handle(@NotNull Result result, @NotNull Player player, @NotNull Inventory inventory) {
+            for (var entry : result.changes().entrySet()) {
+                inventory.setItemStack(entry.getKey(), entry.getValue());
+            }
+
+            for (var entry : result.playerInventoryChanges().entrySet()) {
+                player.getInventory().setItemStack(entry.getKey(), entry.getValue());
+            }
+
+            if (result.newCursorItem() != null) {
+                player.getInventory().setCursorItem(result.newCursorItem());
+            }
+
+            if (result.sideEffects() instanceof SideEffect.DropFromPlayer drop) {
+                for (ItemStack item : drop.items()) {
+                    player.dropItem(item);
+                }
+            }
         }
 
         public static @NotNull Click.Result.Builder builder(@NotNull Inventory clickedInventory, @NotNull Player player) {
@@ -209,7 +316,7 @@ public class Click {
             private final Map<Integer, ItemStack> playerInventoryChanges = new HashMap<>();
             private @Nullable ItemStack newCursorItem;
 
-            private @Nullable Click.Result.SideEffect sideEffects;
+            private @Nullable Click.SideEffect sideEffects;
 
             Builder(@NotNull Inventory clickedInventory, @NotNull Inventory playerInventory, @NotNull ItemStack cursor) {
                 this.clickedInventory = clickedInventory;
@@ -231,14 +338,14 @@ public class Click {
                     int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory.getSize());
                     return getPlayer(converted);
                 } else {
-                    return changes.containsKey(slot) ?
-                            changes.get(slot) : clickedInventory.getItemStack(slot);
+                    ItemStack recent = changes.get(slot);
+                    return recent != null ? recent : clickedInventory.getItemStack(slot);
                 }
             }
 
             public @NotNull ItemStack getPlayer(int slot) {
-                return playerInventoryChanges.containsKey(slot) ?
-                        playerInventoryChanges.get(slot) : this.playerInventory.getItemStack(slot);
+                ItemStack recent = playerInventoryChanges.get(slot);
+                return recent != null ? recent : playerInventory.getItemStack(slot);
             }
 
             @Override
@@ -268,7 +375,7 @@ public class Click {
                 return this;
             }
 
-            public @NotNull Click.Result.Builder sideEffects(@Nullable Click.Result.SideEffect sideEffects) {
+            public @NotNull Click.Result.Builder sideEffects(@Nullable Click.SideEffect sideEffects) {
                 this.sideEffects = sideEffects;
                 return this;
             }
@@ -281,41 +388,21 @@ public class Click {
             }
 
         }
+    }
 
-        /**
-         * Applies the changes of this result to the player and the clicked inventory.
-         * @param player the player who clicked
-         * @param clickedInventory the inventory that was clicked in
-         */
-        public void applyChanges(@NotNull Player player, @NotNull Inventory clickedInventory) {
-            for (var entry : changes.entrySet()) {
-                clickedInventory.setItemStack(entry.getKey(), entry.getValue());
+    /**
+     * Represents side effects that may occur as the result of an inventory click.
+     */
+    public sealed interface SideEffect {
+
+        record DropFromPlayer(@NotNull List<ItemStack> items) implements SideEffect {
+
+            public DropFromPlayer {
+                items = List.copyOf(items);
             }
 
-            for (var entry : playerInventoryChanges.entrySet()) {
-                player.getInventory().setItemStack(entry.getKey(), entry.getValue());
-            }
-
-            if (newCursorItem != null) {
-                player.getInventory().setCursorItem(newCursorItem);
-            }
-
-            if (sideEffects instanceof SideEffect.DropFromPlayer drop) {
-                for (ItemStack item : drop.items()) {
-                    player.dropItem(item);
-                }
-            }
-        }
-
-        /**
-         * Represents side effects that may occur as the result of an inventory click.
-         */
-        public sealed interface SideEffect {
-
-            record DropFromPlayer(@NotNull List<ItemStack> items) implements SideEffect {
-                public DropFromPlayer(@NotNull ItemStack @NotNull ... items) {
-                    this(List.of(items));
-                }
+            public DropFromPlayer(@NotNull ItemStack @NotNull ... items) {
+                this(List.of(items));
             }
         }
     }

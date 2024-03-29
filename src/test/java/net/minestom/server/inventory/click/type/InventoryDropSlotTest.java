@@ -25,7 +25,7 @@ public class InventoryDropSlotTest {
         assertClick(
                 builder -> builder.set(0, ItemStack.of(Material.STONE, 32)),
                 new Click.Info.DropSlot(0, true),
-                builder -> builder.set(0, ItemStack.AIR).sideEffects(new Click.Result.SideEffect.DropFromPlayer(ItemStack.of(Material.STONE, 32)))
+                builder -> builder.set(0, ItemStack.AIR).sideEffects(new Click.SideEffect.DropFromPlayer(ItemStack.of(Material.STONE, 32)))
         );
     }
 
@@ -34,7 +34,7 @@ public class InventoryDropSlotTest {
         assertClick(
                 builder -> builder.set(0, ItemStack.of(Material.STONE, 32)),
                 new Click.Info.DropSlot(0, false),
-                builder -> builder.set(0, ItemStack.of(Material.STONE, 31)).sideEffects(new Click.Result.SideEffect.DropFromPlayer(ItemStack.of(Material.STONE, 1)))
+                builder -> builder.set(0, ItemStack.of(Material.STONE, 31)).sideEffects(new Click.SideEffect.DropFromPlayer(ItemStack.of(Material.STONE, 1)))
         );
     }
 

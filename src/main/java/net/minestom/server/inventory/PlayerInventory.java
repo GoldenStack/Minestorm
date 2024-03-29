@@ -26,7 +26,7 @@ import static net.minestom.server.utils.inventory.PlayerInventoryUtils.*;
  */
 public non-sealed class PlayerInventory extends InventoryImpl {
 
-    public static final @NotNull ClickHandler CLICK_HANDLER = new StandardClickHandler(
+    public static final @NotNull Click.Processor CLICK_HANDLER = ClickProcessors.standard(
             (builder, item, slot) -> {
                 List<Integer> slots = new ArrayList<>();
 

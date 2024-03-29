@@ -19,14 +19,14 @@ public class InventoryCreativeDropItemTest {
         assertClick(
                 builder -> builder,
                 new Click.Info.CreativeDropItem(ItemStack.of(Material.DIRT, 64)),
-                builder -> builder.sideEffects(new Click.Result.SideEffect.DropFromPlayer(ItemStack.of(Material.DIRT, 64)))
+                builder -> builder.sideEffects(new Click.SideEffect.DropFromPlayer(ItemStack.of(Material.DIRT, 64)))
         );
 
         // Make sure it doesn't drop a full stack
         assertClick(
                 builder -> builder,
                 new Click.Info.CreativeDropItem(ItemStack.of(Material.DIRT, 1)),
-                builder -> builder.sideEffects(new Click.Result.SideEffect.DropFromPlayer(ItemStack.of(Material.DIRT, 1)))
+                builder -> builder.sideEffects(new Click.SideEffect.DropFromPlayer(ItemStack.of(Material.DIRT, 1)))
         );
     }
 
