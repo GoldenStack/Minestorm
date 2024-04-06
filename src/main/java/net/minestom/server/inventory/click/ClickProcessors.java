@@ -83,8 +83,8 @@ public class ClickProcessors {
 
         slots = new ArrayList<>(slots);
 
-        var unstacked = TransactionType.general(TransactionOperator.filter(TransactionOperator.STACK_RIGHT, (first, second) -> RULE.getAmount(first) < RULE.getAmount(first)), slots);
-        var stacked = TransactionType.general(TransactionOperator.filter(TransactionOperator.STACK_RIGHT, (first, second) -> RULE.getAmount(first) == RULE.getAmount(first)), slots);
+        var unstacked = TransactionType.general(TransactionOperator.filter(TransactionOperator.STACK_RIGHT, (left, right) -> RULE.getAmount(left) < RULE.getMaxSize(left)), slots);
+        var stacked = TransactionType.general(TransactionOperator.filter(TransactionOperator.STACK_RIGHT, (left, right) -> RULE.getAmount(left) == RULE.getMaxSize(left)), slots);
         var result = TransactionType.join(unstacked, stacked).process(cursor, builder);
 
         if (!result.equals(cursor)) {
