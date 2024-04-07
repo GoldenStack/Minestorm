@@ -4,7 +4,8 @@ import net.minestom.server.entity.EquipmentSlot;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.item.EntityEquipEvent;
-import net.minestom.server.inventory.click.*;
+import net.minestom.server.inventory.click.Click;
+import net.minestom.server.inventory.click.ClickProcessors;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.SetSlotPacket;
@@ -27,7 +28,7 @@ import static net.minestom.server.utils.inventory.PlayerInventoryUtils.*;
 public non-sealed class PlayerInventory extends InventoryImpl {
 
     public static final @NotNull Click.Processor CLICK_HANDLER = ClickProcessors.standard(
-            (builder, item, slot) -> {
+            (getter, item, slot) -> {
                 List<Integer> slots = new ArrayList<>();
 
                 var equipmentSlot = item.material().registry().equipmentSlot();
@@ -53,7 +54,7 @@ public non-sealed class PlayerInventory extends InventoryImpl {
 
                 return slots.stream().mapToInt(i -> i);
             },
-            (builder, item, slot) -> Stream.of(
+            (getter, item, slot) -> Stream.of(
                     IntStream.range(CRAFT_SLOT_1, CRAFT_SLOT_4 + 1), // 1-4
                     IntStream.range(HELMET_SLOT, BOOTS_SLOT + 1), // 5-8
                     IntStream.range(9, 36), // 9-35
@@ -62,11 +63,11 @@ public non-sealed class PlayerInventory extends InventoryImpl {
             ).flatMapToInt(i -> i)
     );
 
-    public static @NotNull IntStream getInnerShiftClickSlots(@NotNull Click.Result.Builder builder) {
+    public static @NotNull IntStream getInnerShiftClickSlots(@NotNull Click.Getter builder) {
         return IntStream.range(0, 36).map(i -> i + builder.clickedSize());
     }
 
-    public static @NotNull IntStream getInnerDoubleClickSlots(@NotNull Click.Result.Builder builder) {
+    public static @NotNull IntStream getInnerDoubleClickSlots(@NotNull Click.Getter builder) {
         return IntStream.range(0, 36).map(i -> i + builder.clickedSize());
     }
 

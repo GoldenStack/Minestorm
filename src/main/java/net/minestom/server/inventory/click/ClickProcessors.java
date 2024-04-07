@@ -1,6 +1,7 @@
 package net.minestom.server.inventory.click;
 
 import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minestom.server.inventory.TransactionOperator;
 import net.minestom.server.inventory.TransactionType;
 import net.minestom.server.item.ItemStack;
@@ -19,126 +20,127 @@ public class ClickProcessors {
 
     private static final @NotNull StackingRule RULE = StackingRule.get();
 
-    public static @NotNull Click.Result leftClick(int slot, @NotNull Click.Result.Builder builder) {
-        ItemStack cursor = builder.getCursorItem();
-        ItemStack clickedItem = builder.get(slot);
+    public static @NotNull Click.Result leftClick(int slot, @NotNull Click.Getter getter) {
+        ItemStack cursor = getter.cursor();
+        ItemStack clickedItem = getter.get(slot);
 
         Pair<ItemStack, ItemStack> pair = TransactionOperator.STACK_LEFT.apply(clickedItem, cursor);
         if (pair != null) { // Stackable items, combine their counts
-            return builder.set(slot, pair.left()).cursor(pair.right()).build();
+            return getter.setter().set(slot, pair.left()).cursor(pair.right()).build();
         } else if (!RULE.canBeStacked(cursor, clickedItem)) { // If they're unstackable, switch them
-            return builder.set(slot, cursor).cursor(clickedItem).build();
+            return getter.setter().set(slot, cursor).cursor(clickedItem).build();
         } else {
-            return builder.build();
+            return Click.Result.nothing();
         }
     }
 
-    public static @NotNull Click.Result rightClick(int slot, @NotNull Click.Result.Builder builder) {
-        ItemStack cursor = builder.getCursorItem();
-        ItemStack clickedItem = builder.get(slot);
+    public static @NotNull Click.Result rightClick(int slot, @NotNull Click.Getter getter) {
+        ItemStack cursor = getter.cursor();
+        ItemStack clickedItem = getter.get(slot);
 
-        if (cursor.isAir() && clickedItem.isAir()) return builder.build(); // Both are air, no changes
+        if (cursor.isAir() && clickedItem.isAir()) return Click.Result.nothing(); // Both are air, no changes
 
         if (cursor.isAir()) { // Take half (rounded up) of the clicked item
             int newAmount = (int) Math.ceil(RULE.getAmount(clickedItem) / 2d);
             Pair<ItemStack, ItemStack> cursorSlot = TransactionOperator.stackLeftN(newAmount).apply(cursor, clickedItem);
-            return cursorSlot == null ? builder.build() :
-                    builder.cursor(cursorSlot.left()).set(slot, cursorSlot.right()).build();
+            return cursorSlot == null ? Click.Result.nothing() :
+                    getter.setter().cursor(cursorSlot.left()).set(slot, cursorSlot.right()).build();
         } else if (clickedItem.isAir() || RULE.canBeStacked(clickedItem, cursor)) { // Can add, transfer one over
             Pair<ItemStack, ItemStack> slotCursor = TransactionOperator.stackLeftN(1).apply(clickedItem, cursor);
-            return slotCursor == null ? builder.build() :
-                    builder.set(slot, slotCursor.left()).cursor(slotCursor.right()).build();
+            return slotCursor == null ? Click.Result.nothing() :
+                    getter.setter().set(slot, slotCursor.left()).cursor(slotCursor.right()).build();
         } else { // Two existing of items of different types, so switch
-            return builder.cursor(clickedItem).set(slot, cursor).build();
+            return getter.setter().cursor(clickedItem).set(slot, cursor).build();
         }
     }
 
-    public static @NotNull Click.Result middleClick(int slot, @NotNull Click.Result.Builder builder) {
-        var item = builder.get(slot);
-        if (builder.getCursorItem().isAir() && !item.isAir()) {
-            return builder.cursor(RULE.apply(item, RULE.getMaxSize(item))).build();
+    public static @NotNull Click.Result middleClick(int slot, @NotNull Click.Getter getter) {
+        var item = getter.get(slot);
+        if (getter.cursor().isAir() && !item.isAir()) {
+            return getter.setter().cursor(RULE.apply(item, RULE.getMaxSize(item))).build();
         } else {
-            return builder.build();
+            return Click.Result.nothing();
         }
     }
 
-    public static @NotNull Click.Result shiftClick(int slot, @NotNull List<Integer> slots, @NotNull Click.Result.Builder builder) {
-        ItemStack clicked = builder.get(slot);
+    public static @NotNull Click.Result shiftClick(int slot, @NotNull List<Integer> slots, @NotNull Click.Getter getter) {
+        ItemStack clicked = getter.get(slot);
 
         slots = new ArrayList<>(slots);
         slots.removeIf(i -> i == slot);
 
-        ItemStack result = TransactionType.add(slots, slots).process(clicked, builder);
+        Pair<ItemStack, Int2ObjectMap<ItemStack>> result = TransactionType.add(slots, slots).process(clicked, getter::get);
+        Click.Setter setter = getter.setter();
+        result.right().forEach(setter::set);
 
-        if (!result.equals(clicked)) {
-            builder.set(slot, result);
-        }
-
-        return builder.build();
+        return !result.left().equals(clicked) ?
+                setter.set(slot, result.left()).build() :
+                setter.build();
     }
 
-    public static @NotNull Click.Result doubleClick(@NotNull List<Integer> slots, @NotNull Click.Result.Builder builder) {
-        var cursor = builder.getCursorItem();
-        if (cursor.isAir()) return builder.build();
-
-        slots = new ArrayList<>(slots);
+    public static @NotNull Click.Result doubleClick(@NotNull List<Integer> slots, @NotNull Click.Getter getter) {
+        var cursor = getter.cursor();
+        if (cursor.isAir()) Click.Result.nothing();
 
         var unstacked = TransactionType.general(TransactionOperator.filter(TransactionOperator.STACK_RIGHT, (left, right) -> RULE.getAmount(left) < RULE.getMaxSize(left)), slots);
         var stacked = TransactionType.general(TransactionOperator.filter(TransactionOperator.STACK_RIGHT, (left, right) -> RULE.getAmount(left) == RULE.getMaxSize(left)), slots);
-        var result = TransactionType.join(unstacked, stacked).process(cursor, builder);
 
-        if (!result.equals(cursor)) {
-            builder.cursor(result);
-        }
+        Pair<ItemStack, Int2ObjectMap<ItemStack>> result = TransactionType.join(unstacked, stacked).process(cursor, getter::get);
+        Click.Setter setter = getter.setter();
+        result.right().forEach(setter::set);
 
-        return builder.build();
+        return !result.left().equals(cursor) ?
+                setter.cursor(result.left()).build() :
+                setter.build();
     }
 
-    public static @NotNull Click.Result dragClick(int countPerSlot, @NotNull List<Integer> slots, @NotNull Click.Result.Builder builder) {
-        var cursor = builder.getCursorItem();
-        if (cursor.isAir()) return builder.build();
+    public static @NotNull Click.Result dragClick(int countPerSlot, @NotNull List<Integer> slots, @NotNull Click.Getter getter) {
+        var cursor = getter.cursor();
+        if (cursor.isAir()) return Click.Result.nothing();
 
-        ItemStack result = TransactionType.general(TransactionOperator.stackLeftN(countPerSlot), slots).process(cursor, builder);
+        Pair<ItemStack, Int2ObjectMap<ItemStack>> result = TransactionType.general(TransactionOperator.stackLeftN(countPerSlot), slots).process(cursor, getter::get);
+        Click.Setter setter = getter.setter();
+        result.right().forEach(setter::set);
 
-        if (!result.equals(cursor)) {
-            builder.cursor(result);
-        }
-
-        return builder.build();
+        return !result.left().equals(cursor) ?
+                setter.cursor(result.left()).build() :
+                setter.build();
     }
 
-    public static @NotNull Click.Result middleDragClick(@NotNull List<Integer> slots, @NotNull Click.Result.Builder builder) {
-        var cursor = builder.getCursorItem();
+    public static @NotNull Click.Result middleDragClick(@NotNull List<Integer> slots, @NotNull Click.Getter getter) {
+        var cursor = getter.cursor();
+
+        Click.Setter setter = getter.setter();
 
         for (int slot : slots) {
-            if (builder.get(slot).isAir()) {
-                builder.set(slot, cursor);
+            if (getter.get(slot).isAir()) {
+                setter.set(slot, cursor);
             }
         }
 
-        return builder.build();
+        return setter.build();
     }
 
-    public static @NotNull Click.Result dropFromCursor(int amount, @NotNull Click.Result.Builder builder) {
-        var cursor = builder.getCursorItem();
-        if (cursor.isAir()) return builder.build(); // Do nothing
+    public static @NotNull Click.Result dropFromCursor(int amount, @NotNull Click.Getter getter) {
+        var cursor = getter.cursor();
+        if (cursor.isAir()) Click.Result.nothing(); // Do nothing
 
         var pair = TransactionOperator.stackLeftN(amount).apply(ItemStack.AIR, cursor);
-        if (pair == null) return builder.build();
+        if (pair == null) return Click.Result.nothing();
 
-        return builder.cursor(pair.right())
+        return getter.setter().cursor(pair.right())
                 .sideEffects(new Click.SideEffect.DropFromPlayer(pair.left()))
                 .build();
     }
 
-    public static @NotNull Click.Result dropFromSlot(int slot, int amount, @NotNull Click.Result.Builder builder) {
-        var item = builder.get(slot);
-        if (item.isAir()) return builder.build(); // Do nothing
+    public static @NotNull Click.Result dropFromSlot(int slot, int amount, @NotNull Click.Getter getter) {
+        var item = getter.get(slot);
+        if (item.isAir()) return Click.Result.nothing(); // Do nothing
 
         var pair = TransactionOperator.stackLeftN(amount).apply(ItemStack.AIR, item);
-        if (pair == null) return builder.build();
+        if (pair == null) return Click.Result.nothing();
 
-        return builder.set(slot, pair.right())
+        return getter.setter().set(slot, pair.right())
                 .sideEffects(new Click.SideEffect.DropFromPlayer(pair.left()))
                 .build();
     }
@@ -154,41 +156,41 @@ public class ClickProcessors {
      */
     public static @NotNull Click.Processor standard(@NotNull SlotSuggestor shiftClickSlots, @NotNull SlotSuggestor doubleClickSlots) {
         return (inventory, player, info) -> {
-            Click.Result.Builder builder = Click.Result.builder(inventory, player);
+            Click.Getter getter = new Click.Getter(inventory, player);
             return switch (info) {
-                case Click.Info.Left(int slot) -> leftClick(slot, builder);
-                case Click.Info.Right(int slot) -> rightClick(slot, builder);
-                case Click.Info.Middle(int slot) -> middleClick(slot, builder);
-                case Click.Info.LeftShift(int slot) -> shiftClick(slot, shiftClickSlots.getList(builder, builder.get(slot), slot), builder);
-                case Click.Info.RightShift(int slot) -> shiftClick(slot, shiftClickSlots.getList(builder, builder.get(slot), slot), builder);
-                case Click.Info.Double(int slot) -> doubleClick(doubleClickSlots.getList(builder, builder.get(slot), slot), builder);
+                case Click.Info.Left(int slot) -> leftClick(slot, getter);
+                case Click.Info.Right(int slot) -> rightClick(slot, getter);
+                case Click.Info.Middle(int slot) -> middleClick(slot, getter);
+                case Click.Info.LeftShift(int slot) -> shiftClick(slot, shiftClickSlots.getList(getter, getter.get(slot), slot), getter);
+                case Click.Info.RightShift(int slot) -> shiftClick(slot, shiftClickSlots.getList(getter, getter.get(slot), slot), getter);
+                case Click.Info.Double(int slot) -> doubleClick(doubleClickSlots.getList(getter, getter.get(slot), slot), getter);
                 case Click.Info.LeftDrag(List<Integer> slots) -> {
-                    int cursorAmount = RULE.getAmount(builder.getCursorItem());
+                    int cursorAmount = RULE.getAmount(getter.cursor());
                     int amount = (int) Math.floor(cursorAmount / (double) slots.size());
-                    yield dragClick(amount, slots, builder);
+                    yield dragClick(amount, slots, getter);
                 }
-                case Click.Info.RightDrag(List<Integer> slots) -> dragClick(1, slots, builder);
-                case Click.Info.MiddleDrag(List<Integer> slots) -> middleDragClick(slots, builder);
-                case Click.Info.DropSlot(int slot, boolean all) -> dropFromSlot(slot, all ? RULE.getAmount(builder.get(slot)) : 1, builder);
-                case Click.Info.LeftDropCursor() -> dropFromCursor(builder.getCursorItem().amount(), builder);
-                case Click.Info.RightDropCursor() -> dropFromCursor(1, builder);
-                case Click.Info.MiddleDropCursor() -> builder.build();
+                case Click.Info.RightDrag(List<Integer> slots) -> dragClick(1, slots, getter);
+                case Click.Info.MiddleDrag(List<Integer> slots) -> middleDragClick(slots, getter);
+                case Click.Info.DropSlot(int slot, boolean all) -> dropFromSlot(slot, all ? RULE.getAmount(getter.get(slot)) : 1, getter);
+                case Click.Info.LeftDropCursor() -> dropFromCursor(getter.cursor().amount(), getter);
+                case Click.Info.RightDropCursor() -> dropFromCursor(1, getter);
+                case Click.Info.MiddleDropCursor() -> Click.Result.nothing();
                 case Click.Info.HotbarSwap(int hotbarSlot, int clickedSlot) -> {
-                    var hotbarItem = builder.getPlayer(hotbarSlot);
-                    var selectedItem = builder.get(clickedSlot);
-                    if (hotbarItem.equals(selectedItem)) yield builder.build();
+                    var hotbarItem = getter.getPlayer(hotbarSlot);
+                    var selectedItem = getter.get(clickedSlot);
+                    if (hotbarItem.equals(selectedItem)) yield Click.Result.nothing();
 
-                    yield builder.setPlayer(hotbarSlot, selectedItem).set(clickedSlot, hotbarItem).build();
+                    yield getter.setter().setPlayer(hotbarSlot, selectedItem).set(clickedSlot, hotbarItem).build();
                 }
                 case Click.Info.OffhandSwap(int slot) -> {
-                    var offhandItem = builder.getPlayer(PlayerInventoryUtils.OFF_HAND_SLOT);
-                    var selectedItem = builder.get(slot);
-                    if (offhandItem.equals(selectedItem)) yield builder.build();
+                    var offhandItem = getter.getPlayer(PlayerInventoryUtils.OFF_HAND_SLOT);
+                    var selectedItem = getter.get(slot);
+                    if (offhandItem.equals(selectedItem)) yield Click.Result.nothing();
 
-                    yield builder.setPlayer(PlayerInventoryUtils.OFF_HAND_SLOT, selectedItem).set(slot, offhandItem).build();
+                    yield getter.setter().setPlayer(PlayerInventoryUtils.OFF_HAND_SLOT, selectedItem).set(slot, offhandItem).build();
                 }
-                case Click.Info.CreativeSetItem(int slot, ItemStack item) -> builder.set(slot, item).build();
-                case Click.Info.CreativeDropItem(ItemStack item) -> builder.sideEffects(new Click.SideEffect.DropFromPlayer(item)).build();
+                case Click.Info.CreativeSetItem(int slot, ItemStack item) -> getter.setter().set(slot, item).build();
+                case Click.Info.CreativeDropItem(ItemStack item) -> getter.setter().sideEffects(new Click.SideEffect.DropFromPlayer(item)).build();
             };
         };
     }
@@ -209,9 +211,9 @@ public class ClickProcessors {
          * @param slot the slot of the clicked item
          * @return the list of slots, in order of priority, to be used for this operation
          */
-        @NotNull IntStream get(@NotNull Click.Result.Builder builder, @NotNull ItemStack item, int slot);
+        @NotNull IntStream get(@NotNull Click.Getter builder, @NotNull ItemStack item, int slot);
 
-        default @NotNull List<Integer> getList(@NotNull Click.Result.Builder builder, @NotNull ItemStack item, int slot) {
+        default @NotNull List<Integer> getList(@NotNull Click.Getter builder, @NotNull ItemStack item, int slot) {
             return get(builder, item, slot).boxed().toList();
         }
     }

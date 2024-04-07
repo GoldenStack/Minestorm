@@ -1,11 +1,13 @@
 package net.minestom.server.inventory;
 
 import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.IntFunction;
 
 /**
  * Represents a type of transaction that you can apply to an {@link Inventory}.
@@ -16,26 +18,39 @@ public interface TransactionType {
      * Applies a transaction operator to a given list of slots, turning it into a TransactionType.
      */
     static @NotNull TransactionType general(@NotNull TransactionOperator operator, @NotNull List<Integer> slots) {
-        return (item, function) -> {
+        return (item, getter) -> {
+            Int2ObjectMap<ItemStack> map = new Int2ObjectArrayMap<>();
             for (int slot : slots) {
-                ItemStack slotItem = function.get(slot);
+                ItemStack slotItem = getter.apply(slot);
 
                 Pair<ItemStack, ItemStack> result = operator.apply(slotItem, item);
                 if (result == null) continue;
 
-                function.put(slot, result.first());
+                map.put(slot, result.first());
                 item = result.second();
             }
 
-            return item;
+            return Pair.of(item, map);
         };
     }
 
     /**
      * Joins two transaction types consecutively.
+     * This will use the same getter in both cases, so ensure that any potential overlap between the transaction types
+     * will not result in unexpected behaviour (e.g. item duping).
      */
     static @NotNull TransactionType join(@NotNull TransactionType first, @NotNull TransactionType second) {
-        return (item, function) -> second.process(first.process(item, function), function);
+        return (item, getter) -> {
+            // Calculate results
+            Pair<ItemStack, Int2ObjectMap<ItemStack>> f = first.process(item, getter);
+            Pair<ItemStack, Int2ObjectMap<ItemStack>> s = second.process(f.left(), getter);
+
+            // Join results
+            Int2ObjectMap<ItemStack> map = new Int2ObjectArrayMap<>();
+            map.putAll(f.right());
+            map.putAll(s.right());
+            return Pair.of(s.left(), map);
+        };
     }
 
     /**
@@ -66,6 +81,6 @@ public interface TransactionType {
      * @param inventory the inventory function; must support #get and #put operations.
      * @return the remaining portion of the processed item
      */
-    @NotNull ItemStack process(@NotNull ItemStack itemStack, @NotNull Int2ObjectFunction<ItemStack> inventory);
+    @NotNull Pair<ItemStack, Int2ObjectMap<ItemStack>> process(@NotNull ItemStack itemStack, @NotNull IntFunction<ItemStack> inventory);
 
 }

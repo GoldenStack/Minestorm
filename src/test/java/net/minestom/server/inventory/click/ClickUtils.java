@@ -47,22 +47,22 @@ public class ClickUtils {
         });
     }
 
-    public static void assertClick(@NotNull UnaryOperator<Click.Result.Builder> initialChanges, @NotNull Click.Info info, @NotNull UnaryOperator<Click.Result.Builder> expectedChanges) {
+    public static void assertClick(@NotNull UnaryOperator<Click.Setter> initialChanges, @NotNull Click.Info info, @NotNull UnaryOperator<Click.Setter> expectedChanges) {
         var player = createPlayer();
         var inventory = createInventory();
 
-        Click.Result.handle(initialChanges.apply(Click.Result.builder(inventory, player)).build(), player, inventory);
+        Click.Result.handle(initialChanges.apply(new Click.Setter(inventory.getSize())).build(), player, inventory);
         var changes = inventory.handleClick(player, info);
-        assertEquals(expectedChanges.apply(Click.Result.builder(inventory, player)).build(), changes);
+        assertEquals(expectedChanges.apply(new Click.Setter(inventory.getSize())).build(), changes);
     }
 
-    public static void assertPlayerClick(@NotNull UnaryOperator<Click.Result.Builder> initialChanges, @NotNull Click.Info info, @NotNull UnaryOperator<Click.Result.Builder> expectedChanges) {
+    public static void assertPlayerClick(@NotNull UnaryOperator<Click.Setter> initialChanges, @NotNull Click.Info info, @NotNull UnaryOperator<Click.Setter> expectedChanges) {
         var player = createPlayer();
         var inventory = player.getInventory();
 
-        Click.Result.handle(initialChanges.apply(Click.Result.builder(inventory, player)).build(), player, inventory);
+        Click.Result.handle(initialChanges.apply(new Click.Setter(inventory.getSize())).build(), player, inventory);
         var changes = inventory.handleClick(player, info);
-        assertEquals(expectedChanges.apply(Click.Result.builder(inventory, player)).build(), changes);
+        assertEquals(expectedChanges.apply(new Click.Setter(inventory.getSize())).build(), changes);
     }
 
     public static void assertProcessed(@NotNull Click.Preprocessor preprocessor, @NotNull Player player, @Nullable Click.Info info, @NotNull ClientClickWindowPacket packet) {

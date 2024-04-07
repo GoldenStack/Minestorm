@@ -1,6 +1,5 @@
 package net.minestom.server.inventory.click;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.inventory.InventoryClickEvent;
@@ -19,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.IntFunction;
 
 public final class Click {
 
@@ -248,6 +248,78 @@ public final class Click {
 
     }
 
+    public record Getter(@NotNull IntFunction<ItemStack> main, @NotNull IntFunction<ItemStack> player,
+                         @NotNull ItemStack cursor, int clickedSize) {
+
+        public Getter(@NotNull Inventory clickedInventory, @NotNull Player player) {
+            this(clickedInventory::getItemStack, player.getInventory()::getItemStack, player.getInventory().getCursorItem(), clickedInventory.getSize());
+        }
+
+        public @NotNull ItemStack get(int slot) {
+            if (slot < clickedSize()) {
+                return main.apply(slot);
+            } else {
+                return getPlayer(PlayerInventoryUtils.protocolToMinestom(slot, clickedSize()));
+            }
+        }
+
+        public @NotNull ItemStack getPlayer(int slot) {
+            return player.apply(slot);
+        }
+
+        public @NotNull Click.Setter setter() {
+            return new Setter(clickedSize);
+        }
+    }
+
+    public static class Setter {
+
+        private final Map<Integer, ItemStack> main = new HashMap<>();
+        private final Map<Integer, ItemStack> player = new HashMap<>();
+        private @Nullable ItemStack cursor;
+        private @Nullable SideEffect sideEffect;
+
+        private final int clickedSize;
+
+        Setter(int clickedSize) {
+            this.clickedSize = clickedSize;
+        }
+
+        public int clickedSize() {
+            return clickedSize;
+        }
+
+        public @NotNull Setter set(int slot, @NotNull ItemStack item) {
+            if (slot >= clickedSize()) {
+                int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedSize());
+                return setPlayer(converted, item);
+            } else {
+                main.put(slot, item);
+                return this;
+            }
+        }
+
+        public @NotNull Setter setPlayer(int slot, @NotNull ItemStack item) {
+            player.put(slot, item);
+            return this;
+        }
+
+        public @NotNull Setter cursor(@Nullable ItemStack newCursorItem) {
+            this.cursor = newCursorItem;
+            return this;
+        }
+
+        public @NotNull Setter sideEffects(@Nullable SideEffect sideEffect) {
+            this.sideEffect = sideEffect;
+            return this;
+        }
+
+        public @NotNull Click.Result build() {
+            return new Result(main, player, cursor, sideEffect);
+        }
+
+    }
+
     /**
      * Stores changes that occurred or will occur as the result of a click.
      * @param changes the map of changes that will occur to the inventory
@@ -257,6 +329,10 @@ public final class Click {
      */
     public record Result(@NotNull Map<Integer, ItemStack> changes, @NotNull Map<Integer, ItemStack> playerInventoryChanges,
                          @Nullable ItemStack newCursorItem, @Nullable Click.SideEffect sideEffects) {
+
+        public static @NotNull Result nothing() {
+            return new Result(Map.of(), Map.of(), null, null);
+        }
 
         public Result {
             changes = Map.copyOf(changes);
@@ -283,95 +359,6 @@ public final class Click {
             }
         }
 
-        public static @NotNull Click.Result.Builder builder(@NotNull Inventory clickedInventory, @NotNull Player player) {
-            return builder(clickedInventory, player.getInventory(), player.getInventory().getCursorItem());
-        }
-
-        public static @NotNull Click.Result.Builder builder(@NotNull Inventory clickedInventory, @NotNull Inventory playerInventory, @NotNull ItemStack cursor) {
-            return new Builder(clickedInventory, playerInventory, cursor);
-        }
-
-        public static final class Builder implements Int2ObjectFunction<ItemStack> {
-            private final @NotNull Inventory clickedInventory;
-            private final @NotNull Inventory playerInventory;
-            private final @NotNull ItemStack cursorItem;
-
-            private final Map<Integer, ItemStack> changes = new HashMap<>();
-            private final Map<Integer, ItemStack> playerInventoryChanges = new HashMap<>();
-            private @Nullable ItemStack newCursorItem;
-
-            private @Nullable Click.SideEffect sideEffects;
-
-            Builder(@NotNull Inventory clickedInventory, @NotNull Inventory playerInventory, @NotNull ItemStack cursor) {
-                this.clickedInventory = clickedInventory;
-                this.playerInventory = playerInventory;
-                this.cursorItem = cursor;
-            }
-
-            public int clickedSize() {
-                return clickedInventory.getSize();
-            }
-
-            public @NotNull ItemStack getCursorItem() {
-                return newCursorItem == null ? cursorItem : newCursorItem;
-            }
-
-            @Override
-            public @NotNull ItemStack get(int slot) {
-                if (slot >= clickedSize()) {
-                    int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory.getSize());
-                    return getPlayer(converted);
-                } else {
-                    ItemStack recent = changes.get(slot);
-                    return recent != null ? recent : clickedInventory.getItemStack(slot);
-                }
-            }
-
-            public @NotNull ItemStack getPlayer(int slot) {
-                ItemStack recent = playerInventoryChanges.get(slot);
-                return recent != null ? recent : playerInventory.getItemStack(slot);
-            }
-
-            @Override
-            public ItemStack put(int key, ItemStack value) {
-                ItemStack get = get(key);
-                set(key, value);
-                return get;
-            }
-
-            public @NotNull Click.Result.Builder set(int slot, @NotNull ItemStack item) {
-                if (slot >= clickedInventory.getSize()) {
-                    int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedInventory.getSize());
-                    return setPlayer(converted, item);
-                } else {
-                    changes.put(slot, item);
-                    return this;
-                }
-            }
-
-            public @NotNull Click.Result.Builder setPlayer(int slot, @NotNull ItemStack item) {
-                playerInventoryChanges.put(slot, item);
-                return this;
-            }
-
-            public @NotNull Click.Result.Builder cursor(@Nullable ItemStack newCursorItem) {
-                this.newCursorItem = newCursorItem;
-                return this;
-            }
-
-            public @NotNull Click.Result.Builder sideEffects(@Nullable Click.SideEffect sideEffects) {
-                this.sideEffects = sideEffects;
-                return this;
-            }
-
-            public @NotNull Click.Result build() {
-                return new Result(
-                        changes, playerInventoryChanges,
-                        newCursorItem, sideEffects
-                );
-            }
-
-        }
     }
 
     /**
