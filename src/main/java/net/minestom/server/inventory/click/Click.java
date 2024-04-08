@@ -72,7 +72,7 @@ public final class Click {
 
         /**
          * Processes the provided click packet, turning it into a {@link Info}.
-         * This will do simple verification of the packet before sending it to {@link #process(ClientClickWindowPacket.ClickType, int, byte, int)}.
+         * This will do simple verification of the packet before sending it to {@link #process(ClientClickWindowPacket.ClickType, int, byte, boolean)}.
          *
          * @param packet the raw click packet
          * @param isCreative whether or not the player is in creative mode (used for ignoring some actions)
@@ -95,7 +95,7 @@ public final class Click {
             if (creativeRequired && !isCreative) return null;
 
             int maxSize = inventory.getSize() + (inventory instanceof PlayerInventory ? 0 : PlayerInventoryUtils.INNER_SIZE);
-            return process(type, slot, button, maxSize);
+            return process(type, slot, button, slot >= 0 && slot < maxSize);
         }
 
         /**
@@ -104,11 +104,11 @@ public final class Click {
          * @param type     the type of the click
          * @param slot     the clicked slot
          * @param button   the sent button
+         * @param valid    whether or not {@code slot} fits within the inventory (may be unused, depending on click)
          * @return the information about the click, or nothing if there was no immediately usable information
          */
         public @Nullable Click.Info process(@NotNull ClientClickWindowPacket.ClickType type,
-                                            int slot, byte button, int maxSize) {
-            boolean valid = slot >= 0 && slot < maxSize;
+                                            int slot, byte button, boolean valid) {
             return switch (type) {
                 case PICKUP -> {
                     if (slot == -999) {
@@ -200,15 +200,18 @@ public final class Click {
          * @return the click result, or null if the click did not occur
          */
         default @Nullable Click.Result handleClick(@NotNull Inventory inventory, @NotNull Player player, @NotNull Click.Info info) {
-            InventoryPreClickEvent preClickEvent = new InventoryPreClickEvent(player.getInventory(), inventory, player, info);
+            PlayerInventory playerInventory = player.getInventory();
+
+            InventoryPreClickEvent preClickEvent = new InventoryPreClickEvent(playerInventory, inventory, player, info);
             EventDispatcher.call(preClickEvent);
 
             Info newInfo = preClickEvent.getClickInfo();
 
             if (!preClickEvent.isCancelled()) {
-                Result changes = processClick(inventory, player, newInfo);
+                Getter getter = new Getter(inventory::getItemStack, playerInventory::getItemStack, playerInventory.getCursorItem(), inventory.getSize());
+                Result changes = processClick(newInfo, getter);
 
-                InventoryClickEvent clickEvent = new InventoryClickEvent(player.getInventory(), inventory, player, newInfo, changes);
+                InventoryClickEvent clickEvent = new InventoryClickEvent(playerInventory, inventory, player, newInfo, changes);
                 EventDispatcher.call(clickEvent);
 
                 if (!clickEvent.isCancelled()) {
@@ -221,8 +224,8 @@ public final class Click {
 
                     if (!info.equals(newInfo) || !changes.equals(newChanges)) {
                         inventory.update(player);
-                        if (inventory != player.getInventory()) {
-                            player.getInventory().update(player);
+                        if (inventory != playerInventory) {
+                            playerInventory.update(player);
                         }
                     }
 
@@ -231,44 +234,35 @@ public final class Click {
             }
 
             inventory.update(player);
-            if (inventory != player.getInventory()) {
-                player.getInventory().update(player);
+            if (inventory != playerInventory) {
+                playerInventory.update(player);
             }
             return null;
         }
 
         /**
          * Processes a click, returning a result. This should be a pure function with no side effects.
-         * @param inventory the clicked inventory (could be a player inventory)
-         * @param player the player who clicked
-         * @param info the click info describing the click
+         * @param info the information about the click
+         * @param getter the getter for the context
          * @return the click result
          */
-        @NotNull Click.Result processClick(@NotNull Inventory inventory, @NotNull Player player, @NotNull Click.Info info);
+        @NotNull Click.Result processClick(@NotNull Info info, @NotNull Getter getter);
 
     }
 
     public record Getter(@NotNull IntFunction<ItemStack> main, @NotNull IntFunction<ItemStack> player,
-                         @NotNull ItemStack cursor, int clickedSize) {
-
-        public Getter(@NotNull Inventory clickedInventory, @NotNull Player player) {
-            this(clickedInventory::getItemStack, player.getInventory()::getItemStack, player.getInventory().getCursorItem(), clickedInventory.getSize());
-        }
+                         @NotNull ItemStack cursor, int mainSize) {
 
         public @NotNull ItemStack get(int slot) {
-            if (slot < clickedSize()) {
+            if (slot < mainSize()) {
                 return main.apply(slot);
             } else {
-                return getPlayer(PlayerInventoryUtils.protocolToMinestom(slot, clickedSize()));
+                return player.apply(PlayerInventoryUtils.protocolToMinestom(slot, mainSize()));
             }
         }
 
-        public @NotNull ItemStack getPlayer(int slot) {
-            return player.apply(slot);
-        }
-
         public @NotNull Click.Setter setter() {
-            return new Setter(clickedSize);
+            return new Setter(mainSize);
         }
     }
 

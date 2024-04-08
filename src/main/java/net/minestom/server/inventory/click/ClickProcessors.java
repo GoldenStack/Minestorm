@@ -155,43 +155,40 @@ public class ClickProcessors {
      * @param doubleClickSlots the double click slot supplier
      */
     public static @NotNull Click.Processor standard(@NotNull SlotSuggestor shiftClickSlots, @NotNull SlotSuggestor doubleClickSlots) {
-        return (inventory, player, info) -> {
-            Click.Getter getter = new Click.Getter(inventory, player);
-            return switch (info) {
-                case Click.Info.Left(int slot) -> leftClick(slot, getter);
-                case Click.Info.Right(int slot) -> rightClick(slot, getter);
-                case Click.Info.Middle(int slot) -> middleClick(slot, getter);
-                case Click.Info.LeftShift(int slot) -> shiftClick(slot, shiftClickSlots.getList(getter, getter.get(slot), slot), getter);
-                case Click.Info.RightShift(int slot) -> shiftClick(slot, shiftClickSlots.getList(getter, getter.get(slot), slot), getter);
-                case Click.Info.Double(int slot) -> doubleClick(doubleClickSlots.getList(getter, getter.get(slot), slot), getter);
-                case Click.Info.LeftDrag(List<Integer> slots) -> {
-                    int cursorAmount = RULE.getAmount(getter.cursor());
-                    int amount = (int) Math.floor(cursorAmount / (double) slots.size());
-                    yield dragClick(amount, slots, getter);
-                }
-                case Click.Info.RightDrag(List<Integer> slots) -> dragClick(1, slots, getter);
-                case Click.Info.MiddleDrag(List<Integer> slots) -> middleDragClick(slots, getter);
-                case Click.Info.DropSlot(int slot, boolean all) -> dropFromSlot(slot, all ? RULE.getAmount(getter.get(slot)) : 1, getter);
-                case Click.Info.LeftDropCursor() -> dropFromCursor(getter.cursor().amount(), getter);
-                case Click.Info.RightDropCursor() -> dropFromCursor(1, getter);
-                case Click.Info.MiddleDropCursor() -> Click.Result.nothing();
-                case Click.Info.HotbarSwap(int hotbarSlot, int clickedSlot) -> {
-                    var hotbarItem = getter.getPlayer(hotbarSlot);
-                    var selectedItem = getter.get(clickedSlot);
-                    if (hotbarItem.equals(selectedItem)) yield Click.Result.nothing();
+        return (info, getter) -> switch (info) {
+            case Click.Info.Left(int slot) -> leftClick(slot, getter);
+            case Click.Info.Right(int slot) -> rightClick(slot, getter);
+            case Click.Info.Middle(int slot) -> middleClick(slot, getter);
+            case Click.Info.LeftShift(int slot) -> shiftClick(slot, shiftClickSlots.getList(getter, getter.get(slot), slot), getter);
+            case Click.Info.RightShift(int slot) -> shiftClick(slot, shiftClickSlots.getList(getter, getter.get(slot), slot), getter);
+            case Click.Info.Double(int slot) -> doubleClick(doubleClickSlots.getList(getter, getter.get(slot), slot), getter);
+            case Click.Info.LeftDrag(List<Integer> slots) -> {
+                int cursorAmount = RULE.getAmount(getter.cursor());
+                int amount = (int) Math.floor(cursorAmount / (double) slots.size());
+                yield dragClick(amount, slots, getter);
+            }
+            case Click.Info.RightDrag(List<Integer> slots) -> dragClick(1, slots, getter);
+            case Click.Info.MiddleDrag(List<Integer> slots) -> middleDragClick(slots, getter);
+            case Click.Info.DropSlot(int slot, boolean all) -> dropFromSlot(slot, all ? RULE.getAmount(getter.get(slot)) : 1, getter);
+            case Click.Info.LeftDropCursor() -> dropFromCursor(getter.cursor().amount(), getter);
+            case Click.Info.RightDropCursor() -> dropFromCursor(1, getter);
+            case Click.Info.MiddleDropCursor() -> Click.Result.nothing();
+            case Click.Info.HotbarSwap(int hotbarSlot, int clickedSlot) -> {
+                var hotbarItem = getter.player().apply(hotbarSlot);
+                var selectedItem = getter.get(clickedSlot);
+                if (hotbarItem.equals(selectedItem)) yield Click.Result.nothing();
 
-                    yield getter.setter().setPlayer(hotbarSlot, selectedItem).set(clickedSlot, hotbarItem).build();
-                }
-                case Click.Info.OffhandSwap(int slot) -> {
-                    var offhandItem = getter.getPlayer(PlayerInventoryUtils.OFF_HAND_SLOT);
-                    var selectedItem = getter.get(slot);
-                    if (offhandItem.equals(selectedItem)) yield Click.Result.nothing();
+                yield getter.setter().setPlayer(hotbarSlot, selectedItem).set(clickedSlot, hotbarItem).build();
+            }
+            case Click.Info.OffhandSwap(int slot) -> {
+                var offhandItem = getter.player().apply(PlayerInventoryUtils.OFF_HAND_SLOT);
+                var selectedItem = getter.get(slot);
+                if (offhandItem.equals(selectedItem)) yield Click.Result.nothing();
 
-                    yield getter.setter().setPlayer(PlayerInventoryUtils.OFF_HAND_SLOT, selectedItem).set(slot, offhandItem).build();
-                }
-                case Click.Info.CreativeSetItem(int slot, ItemStack item) -> getter.setter().set(slot, item).build();
-                case Click.Info.CreativeDropItem(ItemStack item) -> getter.setter().sideEffects(new Click.SideEffect.DropFromPlayer(item)).build();
-            };
+                yield getter.setter().setPlayer(PlayerInventoryUtils.OFF_HAND_SLOT, selectedItem).set(slot, offhandItem).build();
+            }
+            case Click.Info.CreativeSetItem(int slot, ItemStack item) -> getter.setter().set(slot, item).build();
+            case Click.Info.CreativeDropItem(ItemStack item) -> getter.setter().sideEffects(new Click.SideEffect.DropFromPlayer(item)).build();
         };
     }
 

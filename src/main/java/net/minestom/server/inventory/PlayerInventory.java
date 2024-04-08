@@ -64,11 +64,11 @@ public non-sealed class PlayerInventory extends InventoryImpl {
     );
 
     public static @NotNull IntStream getInnerShiftClickSlots(@NotNull Click.Getter builder) {
-        return IntStream.range(0, 36).map(i -> i + builder.clickedSize());
+        return IntStream.range(0, 36).map(i -> i + builder.mainSize());
     }
 
     public static @NotNull IntStream getInnerDoubleClickSlots(@NotNull Click.Getter builder) {
-        return IntStream.range(0, 36).map(i -> i + builder.clickedSize());
+        return IntStream.range(0, 36).map(i -> i + builder.mainSize());
     }
 
     private static int getSlotIndex(@NotNull EquipmentSlot slot, int heldSlot) {

@@ -38,11 +38,11 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
     protected final Set<Player> unmodifiableViewers = Collections.unmodifiableSet(viewers);
 
     public static final @NotNull Click.Processor DEFAULT_HANDLER = ClickProcessors.standard(
-            (builder, item, slot) -> slot >= builder.clickedSize() ?
-                    IntStream.range(0, builder.clickedSize()) :
+            (builder, item, slot) -> slot >= builder.mainSize() ?
+                    IntStream.range(0, builder.mainSize()) :
                     PlayerInventory.getInnerShiftClickSlots(builder),
             (builder, item, slot) -> IntStream.concat(
-                    IntStream.range(0, builder.clickedSize()),
+                    IntStream.range(0, builder.mainSize()),
                     PlayerInventory.getInnerDoubleClickSlots(builder)
             ));
 
