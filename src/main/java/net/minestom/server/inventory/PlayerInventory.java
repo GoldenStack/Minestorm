@@ -27,48 +27,12 @@ import static net.minestom.server.utils.inventory.PlayerInventoryUtils.*;
  */
 public non-sealed class PlayerInventory extends InventoryImpl {
 
-    public static final @NotNull Click.Processor CLICK_HANDLER = ClickProcessors.standard(
-            (getter, item, slot) -> {
-                List<Integer> slots = new ArrayList<>();
-
-                var equipmentSlot = item.material().registry().equipmentSlot();
-                if (equipmentSlot != null && slot != equipmentSlot.armorSlot()) {
-                    slots.add(equipmentSlot.armorSlot());
-                }
-
-                if (item.material() == Material.SHIELD && slot != OFF_HAND_SLOT) {
-                    slots.add(OFF_HAND_SLOT);
-                }
-
-                if (slot < 9 || slot > 35) {
-                    IntStream.range(9, 36).forEach(slots::add);
-                }
-
-                if (slot < 0 || slot > 8) {
-                    IntStream.range(0, 9).forEach(slots::add);
-                }
-
-                if (slot == CRAFT_RESULT) {
-                    Collections.reverse(slots);
-                }
-
-                return slots.stream().mapToInt(i -> i);
-            },
-            (getter, item, slot) -> Stream.of(
-                    IntStream.range(CRAFT_SLOT_1, CRAFT_SLOT_4 + 1), // 1-4
-                    IntStream.range(HELMET_SLOT, BOOTS_SLOT + 1), // 5-8
-                    IntStream.range(9, 36), // 9-35
-                    IntStream.range(0, 9), // 36-44
-                    IntStream.of(OFF_HAND_SLOT) // 45
-            ).flatMapToInt(i -> i)
-    );
-
-    public static @NotNull IntStream getInnerShiftClickSlots(@NotNull Click.Getter builder) {
-        return IntStream.range(0, 36).map(i -> i + builder.mainSize());
+    public static @NotNull IntStream getInnerShiftClickSlots(int size) {
+        return IntStream.range(0, 36).map(i -> i + size);
     }
 
-    public static @NotNull IntStream getInnerDoubleClickSlots(@NotNull Click.Getter builder) {
-        return IntStream.range(0, 36).map(i -> i + builder.mainSize());
+    public static @NotNull IntStream getInnerDoubleClickSlots(int size) {
+        return IntStream.range(0, 36).map(i -> i + size);
     }
 
     private static int getSlotIndex(@NotNull EquipmentSlot slot, int heldSlot) {
@@ -210,7 +174,42 @@ public non-sealed class PlayerInventory extends InventoryImpl {
 
     @Override
     public @Nullable Click.Result handleClick(@NotNull Player player, @NotNull Click.Info info) {
-        return CLICK_HANDLER.handleClick(this, player, info);
+        var processor = ClickProcessors.standard(
+                (getter, item, slot) -> {
+                    List<Integer> slots = new ArrayList<>();
+
+                    var equipmentSlot = item.material().registry().equipmentSlot();
+                    if (equipmentSlot != null && slot != equipmentSlot.armorSlot()) {
+                        slots.add(equipmentSlot.armorSlot());
+                    }
+
+                    if (item.material() == Material.SHIELD && slot != OFF_HAND_SLOT) {
+                        slots.add(OFF_HAND_SLOT);
+                    }
+
+                    if (slot < 9 || slot > 35) {
+                        IntStream.range(9, 36).forEach(slots::add);
+                    }
+
+                    if (slot < 0 || slot > 8) {
+                        IntStream.range(0, 9).forEach(slots::add);
+                    }
+
+                    if (slot == CRAFT_RESULT) {
+                        Collections.reverse(slots);
+                    }
+
+                    return slots.stream().mapToInt(i -> i);
+                },
+                (getter, item, slot) -> Stream.of(
+                        IntStream.range(CRAFT_SLOT_1, CRAFT_SLOT_4 + 1), // 1-4
+                        IntStream.range(HELMET_SLOT, BOOTS_SLOT + 1), // 5-8
+                        IntStream.range(9, 36), // 9-35
+                        IntStream.range(0, 9), // 36-44
+                        IntStream.of(OFF_HAND_SLOT) // 45
+                ).flatMapToInt(i -> i)
+        );
+        return ContainerInventory.handleClick(this, player, info, processor);
     }
 
     public @NotNull ItemStack getEquipment(@NotNull EquipmentSlot slot, int heldSlot) {

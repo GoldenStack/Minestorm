@@ -14,29 +14,6 @@ import java.util.stream.IntStream;
 
 public class FurnaceInventory extends ContainerInventory {
 
-    /**
-     * Client prediction appears to disallow shift clicking into furnace inventories.<br>
-     * Instead:
-     * - Shift clicks in the inventory go to the player inventory like normal
-     * - Shift clicks in the hotbar go to the storage
-     * - Shift clicks in the storage go to the hotbar
-     */
-    public static final @NotNull Click.Processor FURNACE_HANDLER = ClickProcessors.standard(
-            (builder, item, slot) -> {
-                int size = builder.mainSize();
-                if (slot < size) {
-                    return PlayerInventory.getInnerShiftClickSlots(builder);
-                } else if (slot < size + 27) {
-                    return IntStream.range(27, 36).map(i -> i + size);
-                } else {
-                    return IntStream.range(0, 27).map(i -> i + size);
-                }
-            },
-            (builder, item, slot) -> IntStream.concat(
-                    IntStream.range(0, builder.mainSize()),
-                    PlayerInventory.getInnerDoubleClickSlots(builder)
-            ));
-
     private short remainingFuelTick;
     private short maximumFuelBurnTime;
     private short progressArrow;
@@ -50,9 +27,30 @@ public class FurnaceInventory extends ContainerInventory {
         super(InventoryType.FURNACE, title);
     }
 
+    /**
+     * Client prediction appears to disallow shift clicking into furnace inventories.<br>
+     * Instead:
+     * - Shift clicks in the inventory go to the player inventory like normal
+     * - Shift clicks in the hotbar go to the storage
+     * - Shift clicks in the storage go to the hotbar
+     */
     @Override
     public @Nullable Click.Result handleClick(@NotNull Player player, @NotNull Click.Info info) {
-        return FURNACE_HANDLER.handleClick(this, player, info);
+        var processor = ClickProcessors.standard(
+                (builder, item, slot) -> {
+                    if (slot < getSize()) {
+                        return PlayerInventory.getInnerShiftClickSlots(getSize());
+                    } else if (slot < getSize() + 27) {
+                        return IntStream.range(27, 36).map(i -> i + getSize());
+                    } else {
+                        return IntStream.range(0, 27).map(i -> i + getSize());
+                    }
+                },
+                (builder, item, slot) -> IntStream.concat(
+                        IntStream.range(0, getSize()),
+                        PlayerInventory.getInnerDoubleClickSlots(getSize())
+                ));
+        return ContainerInventory.handleClick(this, player, info, processor);
     }
 
     /**

@@ -51,7 +51,7 @@ public class ClickUtils {
         var player = createPlayer();
         var inventory = createInventory();
 
-        Click.Result.handle(initialChanges.apply(new Click.Setter(inventory.getSize())).build(), player, inventory);
+        ContainerInventory.apply(initialChanges.apply(new Click.Setter(inventory.getSize())).build(), player, inventory);
         var changes = inventory.handleClick(player, info);
         assertEquals(expectedChanges.apply(new Click.Setter(inventory.getSize())).build(), changes);
     }
@@ -60,7 +60,7 @@ public class ClickUtils {
         var player = createPlayer();
         var inventory = player.getInventory();
 
-        Click.Result.handle(initialChanges.apply(new Click.Setter(inventory.getSize())).build(), player, inventory);
+        ContainerInventory.apply(initialChanges.apply(new Click.Setter(inventory.getSize())).build(), player, inventory);
         var changes = inventory.handleClick(player, info);
         assertEquals(expectedChanges.apply(new Click.Setter(inventory.getSize())).build(), changes);
     }

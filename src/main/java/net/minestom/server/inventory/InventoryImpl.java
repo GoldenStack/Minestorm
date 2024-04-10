@@ -3,7 +3,8 @@ package net.minestom.server.inventory;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.inventory.InventoryItemChangeEvent;
-import net.minestom.server.inventory.click.*;
+import net.minestom.server.inventory.click.Click;
+import net.minestom.server.inventory.click.ClickProcessors;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.network.packet.server.play.CloseWindowPacket;
 import net.minestom.server.network.packet.server.play.SetSlotPacket;
@@ -36,15 +37,6 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
     // the players currently viewing this inventory
     protected final Set<Player> viewers = new CopyOnWriteArraySet<>();
     protected final Set<Player> unmodifiableViewers = Collections.unmodifiableSet(viewers);
-
-    public static final @NotNull Click.Processor DEFAULT_HANDLER = ClickProcessors.standard(
-            (builder, item, slot) -> slot >= builder.mainSize() ?
-                    IntStream.range(0, builder.mainSize()) :
-                    PlayerInventory.getInnerShiftClickSlots(builder),
-            (builder, item, slot) -> IntStream.concat(
-                    IntStream.range(0, builder.mainSize()),
-                    PlayerInventory.getInnerDoubleClickSlots(builder)
-            ));
 
     protected InventoryImpl(int size) {
         this.size = size;
@@ -120,7 +112,15 @@ sealed abstract class InventoryImpl implements Inventory permits ContainerInvent
 
     @Override
     public @Nullable Click.Result handleClick(@NotNull Player player, @NotNull Click.Info info) {
-        return DEFAULT_HANDLER.handleClick(this, player, info);
+        var processor = ClickProcessors.standard(
+                (builder, item, slot) -> slot >= getSize() ?
+                        IntStream.range(0, getSize()) :
+                        PlayerInventory.getInnerShiftClickSlots(getSize()),
+                (builder, item, slot) -> IntStream.concat(
+                        IntStream.range(0, getSize()),
+                        PlayerInventory.getInnerDoubleClickSlots(getSize())
+                ));
+        return ContainerInventory.handleClick(this, player, info, processor);
     }
 
     @Override

@@ -1,10 +1,5 @@
 package net.minestom.server.inventory.click;
 
-import net.minestom.server.entity.Player;
-import net.minestom.server.event.EventDispatcher;
-import net.minestom.server.event.inventory.InventoryClickEvent;
-import net.minestom.server.event.inventory.InventoryPostClickEvent;
-import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.PlayerInventory;
 import net.minestom.server.item.ItemStack;
@@ -185,71 +180,6 @@ public final class Click {
 
     }
 
-    /**
-     * Handles different types of clicks by players in an inventory.
-     * The inventory is provided to this handler in the case of handlers that don't have internal state and may manage
-     * multiple inventories, but it's also possible to store the inventory yourself and control usages of it.
-     */
-    public interface Processor {
-
-        /**
-         * Processes a click, returning a result. This will call events for the click.
-         * @param inventory the clicked inventory (could be a player inventory)
-         * @param player the player who clicked
-         * @param info the click info describing the click
-         * @return the click result, or null if the click did not occur
-         */
-        default @Nullable Click.Result handleClick(@NotNull Inventory inventory, @NotNull Player player, @NotNull Click.Info info) {
-            PlayerInventory playerInventory = player.getInventory();
-
-            InventoryPreClickEvent preClickEvent = new InventoryPreClickEvent(playerInventory, inventory, player, info);
-            EventDispatcher.call(preClickEvent);
-
-            Info newInfo = preClickEvent.getClickInfo();
-
-            if (!preClickEvent.isCancelled()) {
-                Getter getter = new Getter(inventory::getItemStack, playerInventory::getItemStack, playerInventory.getCursorItem(), inventory.getSize());
-                Result changes = processClick(newInfo, getter);
-
-                InventoryClickEvent clickEvent = new InventoryClickEvent(playerInventory, inventory, player, newInfo, changes);
-                EventDispatcher.call(clickEvent);
-
-                if (!clickEvent.isCancelled()) {
-                    Result newChanges = clickEvent.getChanges();
-
-                    Result.handle(newChanges, player, inventory);
-
-                    var postClickEvent = new InventoryPostClickEvent(player, inventory, newInfo, newChanges);
-                    EventDispatcher.call(postClickEvent);
-
-                    if (!info.equals(newInfo) || !changes.equals(newChanges)) {
-                        inventory.update(player);
-                        if (inventory != playerInventory) {
-                            playerInventory.update(player);
-                        }
-                    }
-
-                    return newChanges;
-                }
-            }
-
-            inventory.update(player);
-            if (inventory != playerInventory) {
-                playerInventory.update(player);
-            }
-            return null;
-        }
-
-        /**
-         * Processes a click, returning a result. This should be a pure function with no side effects.
-         * @param info the information about the click
-         * @param getter the getter for the context
-         * @return the click result
-         */
-        @NotNull Click.Result processClick(@NotNull Info info, @NotNull Getter getter);
-
-    }
-
     public record Getter(@NotNull IntFunction<ItemStack> main, @NotNull IntFunction<ItemStack> player,
                          @NotNull ItemStack cursor, int mainSize) {
 
@@ -279,13 +209,9 @@ public final class Click {
             this.clickedSize = clickedSize;
         }
 
-        public int clickedSize() {
-            return clickedSize;
-        }
-
         public @NotNull Setter set(int slot, @NotNull ItemStack item) {
-            if (slot >= clickedSize()) {
-                int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedSize());
+            if (slot >= clickedSize) {
+                int converted = PlayerInventoryUtils.protocolToMinestom(slot, clickedSize);
                 return setPlayer(converted, item);
             } else {
                 main.put(slot, item);
@@ -331,26 +257,6 @@ public final class Click {
         public Result {
             changes = Map.copyOf(changes);
             playerInventoryChanges = Map.copyOf(playerInventoryChanges);
-        }
-
-        static void handle(@NotNull Result result, @NotNull Player player, @NotNull Inventory inventory) {
-            for (var entry : result.changes().entrySet()) {
-                inventory.setItemStack(entry.getKey(), entry.getValue());
-            }
-
-            for (var entry : result.playerInventoryChanges().entrySet()) {
-                player.getInventory().setItemStack(entry.getKey(), entry.getValue());
-            }
-
-            if (result.newCursorItem() != null) {
-                player.getInventory().setCursorItem(result.newCursorItem());
-            }
-
-            if (result.sideEffects() instanceof SideEffect.DropFromPlayer drop) {
-                for (ItemStack item : drop.items()) {
-                    player.dropItem(item);
-                }
-            }
         }
 
     }

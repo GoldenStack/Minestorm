@@ -11,12 +11,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 
 /**
  * Provides standard implementations of most click functions.
  */
-public class ClickProcessors {
+public final class ClickProcessors {
 
     private static final @NotNull StackingRule RULE = StackingRule.get();
 
@@ -154,7 +155,7 @@ public class ClickProcessors {
      * @param shiftClickSlots the shift click slot supplier
      * @param doubleClickSlots the double click slot supplier
      */
-    public static @NotNull Click.Processor standard(@NotNull SlotSuggestor shiftClickSlots, @NotNull SlotSuggestor doubleClickSlots) {
+    public static @NotNull BiFunction<Click.@NotNull Info, Click.@NotNull Getter, Click.@NotNull Result> standard(@NotNull SlotSuggestor shiftClickSlots, @NotNull SlotSuggestor doubleClickSlots) {
         return (info, getter) -> switch (info) {
             case Click.Info.Left(int slot) -> leftClick(slot, getter);
             case Click.Info.Right(int slot) -> rightClick(slot, getter);
