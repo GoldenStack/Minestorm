@@ -54,7 +54,7 @@ final class DynamicRegistryImpl<T> implements DynamicRegistry<T> {
     private final ReentrantLock lock = new ReentrantLock(); // Protects writes
     private final List<T> entryById = new CopyOnWriteArrayList<>();
     private final Map<NamespaceID, T> entryByName = new ConcurrentHashMap<>();
-    private final List<NamespaceID> idByName = new CopyOnWriteArrayList<>();
+    private final List<NamespaceID> nameById = new CopyOnWriteArrayList<>();
     private final List<DataPack> packById = new CopyOnWriteArrayList<>();
 
     private final String id;
@@ -97,14 +97,14 @@ final class DynamicRegistryImpl<T> implements DynamicRegistry<T> {
     public @Nullable Key<T> getKey(int id) {
         if (id < 0 || id >= entryById.size())
             return null;
-        return Key.of(idByName.get(id));
+        return Key.of(nameById.get(id));
     }
 
     @Override
     public @Nullable NamespaceID getName(int id) {
         if (id < 0 || id >= entryById.size())
             return null;
-        return idByName.get(id);
+        return nameById.get(id);
     }
 
     @Override
@@ -116,7 +116,12 @@ final class DynamicRegistryImpl<T> implements DynamicRegistry<T> {
 
     @Override
     public int getId(@NotNull NamespaceID id) {
-        return idByName.indexOf(id);
+        return nameById.indexOf(id);
+    }
+
+    @Override
+    public @NotNull List<NamespaceID> keys() {
+        return Collections.unmodifiableList(nameById);
     }
 
     @Override
@@ -136,12 +141,12 @@ final class DynamicRegistryImpl<T> implements DynamicRegistry<T> {
 
         lock.lock();
         try {
-            int id = idByName.indexOf(namespaceId);
+            int id = nameById.indexOf(namespaceId);
             if (id == -1) id = entryById.size();
 
             entryById.add(id, object);
             entryByName.put(namespaceId, object);
-            idByName.add(namespaceId);
+            nameById.add(id, namespaceId);
             packById.add(id, pack);
             vanillaRegistryDataPacket.invalidate();
             return Key.of(namespaceId);
@@ -156,12 +161,12 @@ final class DynamicRegistryImpl<T> implements DynamicRegistry<T> {
 
         lock.lock();
         try {
-            int id = idByName.indexOf(namespaceId);
+            int id = nameById.indexOf(namespaceId);
             if (id == -1) return false;
 
             entryById.remove(id);
             entryByName.remove(namespaceId);
-            idByName.remove(id);
+            nameById.remove(id);
             packById.remove(id);
             vanillaRegistryDataPacket.invalidate();
             return true;

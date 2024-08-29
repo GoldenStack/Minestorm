@@ -148,6 +148,16 @@ public sealed interface DynamicRegistry<T> permits DynamicRegistryImpl {
         return getId(key.namespace());
     }
 
+    /**
+     * <p>Returns the keys of the entries in this registry as an immutable list. The indices in the returned list
+     * correspond to the protocol ID of the entry that each key represents.</p>
+     *
+     * <p>Note: The returned list is not guaranteed to update with the registry,
+     * it should be fetched again for updated values.</p>
+     *
+     * @return An immutable list of the keys in this registry.
+     */
+    @NotNull List<NamespaceID> keys();
 
     /**
      * <p>Returns the entries in this registry as an immutable list. The indices in the returned list correspond
