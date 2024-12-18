@@ -57,7 +57,7 @@ public abstract class Chunk implements Block.Getter, Block.Setter, Biome.Getter,
     private boolean readOnly;
 
     protected volatile boolean loaded = true;
-    protected AtomicLong tickets = new AtomicLong(0);
+    protected AtomicLong tickets = new AtomicLong(0); // Tickets keeping this chunk loaded
 
     private final Viewable viewable;
 
@@ -325,10 +325,21 @@ public abstract class Chunk implements Block.Getter, Block.Setter, Biome.Getter,
      */
     public abstract void invalidate();
 
+    /**
+     * Pushes a ticket onto this chunk's existing tickets.
+     *
+     * This is internal! Use {@link ChunkTicket} instead if you want to keep chunks loaded.
+     */
+    @ApiStatus.Internal
     public void pushTicket() {
         this.tickets.incrementAndGet();
     }
 
+    /**
+     * Pops a ticket from this chunk's existing tickets, unloading if it reaches zero.
+     *
+     * This is internal! Use {@link ChunkTicket} instead if you want to keep chunks loaded.
+     */
     public void popTicket() {
         if (this.tickets.decrementAndGet() == 0) {
             getInstance().unloadChunk(this);
