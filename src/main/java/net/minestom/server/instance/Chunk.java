@@ -340,6 +340,7 @@ public abstract class Chunk implements Block.Getter, Block.Setter, Biome.Getter,
      *
      * This is internal! Use {@link ChunkTicket} instead if you want to keep chunks loaded.
      */
+    @ApiStatus.Internal
     public void popTicket() {
         if (this.tickets.decrementAndGet() == 0) {
             getInstance().unloadChunk(this);
