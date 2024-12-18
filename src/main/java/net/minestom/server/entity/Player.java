@@ -156,9 +156,15 @@ public class Player extends LivingEntity implements CommandSender, HoverEventSou
 
     final ChunkRange.ChunkConsumer chunkAdder = (chunkX, chunkZ) -> {
         // Load new chunks
-        this.instance.loadOptionalChunk(chunkX, chunkZ).thenAccept(this::sendChunk);
+        this.instance.loadOptionalChunk(chunkX, chunkZ).thenAccept(chunk -> {
+            chunk.pushTicket();
+
+            this.sendChunk(chunk);
+        });
     };
     final ChunkRange.ChunkConsumer chunkRemover = (chunkX, chunkZ) -> {
+        this.instance.getChunk(chunkX, chunkZ).popTicket();
+
         // Unload old chunks
         sendPacket(new UnloadChunkPacket(chunkX, chunkZ));
         EventDispatcher.call(new PlayerChunkUnloadEvent(this, chunkX, chunkZ));

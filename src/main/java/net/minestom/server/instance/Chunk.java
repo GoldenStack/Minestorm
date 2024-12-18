@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 // TODO light data & API
 
@@ -56,6 +57,8 @@ public abstract class Chunk implements Block.Getter, Block.Setter, Biome.Getter,
     private boolean readOnly;
 
     protected volatile boolean loaded = true;
+    protected AtomicLong tickets = new AtomicLong(0);
+
     private final Viewable viewable;
 
     // Data
@@ -321,4 +324,14 @@ public abstract class Chunk implements Block.Getter, Block.Setter, Biome.Getter,
      * Invalidate the chunk caches
      */
     public abstract void invalidate();
+
+    public void pushTicket() {
+        this.tickets.incrementAndGet();
+    }
+
+    public void popTicket() {
+        if (this.tickets.decrementAndGet() == 0) {
+            getInstance().unloadChunk(this);
+        }
+    }
 }
