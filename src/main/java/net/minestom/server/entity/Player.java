@@ -86,6 +86,7 @@ import net.minestom.server.utils.MathUtils;
 import net.minestom.server.utils.PacketSendingUtils;
 import net.minestom.server.utils.async.AsyncUtils;
 import net.minestom.server.utils.chunk.ChunkUpdateLimitChecker;
+import net.minestom.server.utils.chunk.ChunkUtils;
 import net.minestom.server.utils.identity.NamedAndIdentified;
 import net.minestom.server.utils.inventory.PlayerInventoryUtils;
 import net.minestom.server.utils.time.Cooldown;
@@ -163,7 +164,10 @@ public class Player extends LivingEntity implements CommandSender, HoverEventSou
         });
     };
     final ChunkRange.ChunkConsumer chunkRemover = (chunkX, chunkZ) -> {
-        this.instance.getChunk(chunkX, chunkZ).popTicket();
+        Chunk chunk = this.instance.getChunk(chunkX, chunkZ);
+        if (ChunkUtils.isLoaded(chunk)) {
+            chunk.popTicket();
+        }
 
         // Unload old chunks
         sendPacket(new UnloadChunkPacket(chunkX, chunkZ));
