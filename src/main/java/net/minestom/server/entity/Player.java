@@ -1209,7 +1209,7 @@ public class Player extends LivingEntity implements CommandSender, HoverEventSou
 
             // Show player again
             PacketSendingUtils.broadcastPlayPacket(addPlayerPacket);
-            getViewers().forEach(player -> showPlayer(player.getPlayerConnection()));
+            getViewers().forEach(this::showPlayer);
         }
 
         getInventory().update();
@@ -1496,6 +1496,7 @@ public class Player extends LivingEntity implements CommandSender, HoverEventSou
 
     /**
      * Shortcut for {@link PlayerConnection#sendPacket(SendablePacket)}.
+     * Try to send packets here though, since it's easier to override this method and perform any desired modifications.
      *
      * @param packet the packet to send
      */
@@ -2225,17 +2226,17 @@ public class Player extends LivingEntity implements CommandSender, HoverEventSou
      * <p>
      * WARNING: this alone does not sync the player, please use {@link #addViewer(Player)}.
      *
-     * @param connection the connection to show the player to
+     * @param player the player to show the player to
      */
-    protected void showPlayer(@NotNull PlayerConnection connection) {
-        connection.sendPacket(getEntityType().registry().spawnType().getSpawnPacket(this));
-        connection.sendPacket(getVelocityPacket());
-        connection.sendPacket(getMetadataPacket());
-        connection.sendPacket(getEquipmentsPacket());
+    protected void showPlayer(@NotNull Player player) {
+        player.sendPacket(getEntityType().registry().spawnType().getSpawnPacket(this));
+        player.sendPacket(getVelocityPacket());
+        player.sendPacket(getMetadataPacket());
+        player.sendPacket(getEquipmentsPacket());
         if (hasPassenger()) {
-            connection.sendPacket(getPassengersPacket());
+            player.sendPacket(getPassengersPacket());
         }
-        connection.sendPacket(new EntityHeadLookPacket(getEntityId(), position.yaw()));
+        player.sendPacket(new EntityHeadLookPacket(getEntityId(), position.yaw()));
     }
 
     @Override

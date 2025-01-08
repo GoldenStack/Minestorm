@@ -105,11 +105,10 @@ public final class PacketViewableUtils {
 
         private void processPlayer(Player player, NetworkBuffer buffer) {
             final long capacity = buffer.capacity();
-            final PlayerConnection connection = player.getPlayerConnection();
             final LongArrayList pairs = entityIdMap.get(player.getEntityId());
             if (pairs == null) {
                 // No range exception, write the whole buffer
-                writeTo(connection, buffer, 0, capacity);
+                player.sendPacket(new BufferedPacket(buffer, 0, capacity));
                 return;
             }
             // Player has range exception(s)
@@ -119,18 +118,10 @@ public final class PacketViewableUtils {
             for (int i = 0; i < pairs.size(); ++i) {
                 final long offsets = elements[i];
                 final int start = (int) (offsets >> 32);
-                if (start != lastWrite) writeTo(connection, buffer, lastWrite, start - lastWrite);
+                if (start != lastWrite) player.sendPacket(new BufferedPacket(buffer, lastWrite, start - lastWrite));
                 lastWrite = (int) offsets; // End = last 32 bits
             }
-            if (capacity != lastWrite) writeTo(connection, buffer, lastWrite, capacity - lastWrite);
-        }
-
-        private static void writeTo(PlayerConnection connection, NetworkBuffer buffer, long offset, long length) {
-            if (connection instanceof PlayerSocketConnection socketConnection) {
-                socketConnection.sendPacket(new BufferedPacket(buffer, offset, length));
-                return;
-            }
-            // TODO for non-socket connection
+            if (capacity != lastWrite) player.sendPacket(new BufferedPacket(buffer, lastWrite, capacity - lastWrite));
         }
     }
 }
